@@ -419,8 +419,15 @@
             <input type="text" id="cfgAnvilLabel">
           </div>
           <div class="field">
-            <label>Иконка на кнопке (эмодзи)</label>
-            <input type="text" id="cfgAnvilIcon">
+            <label>Иконка на кнопке (эмодзи или картинка)</label>
+            <div class="row" style="margin-bottom:0; align-items:center;">
+              <div class="icon-preview-wrap" style="flex:0 0 auto;">
+                <div class="icon-preview" id="anvilIconPreview"></div>
+              </div>
+              <input type="text" id="cfgAnvilIcon" style="flex:1; min-width:0;">
+              <button type="button" class="small upload-btn" onclick="document.getElementById('anvilIconFile').click()" title="Загрузить картинку с компьютера">📁</button>
+              <input type="file" accept="image/*" id="anvilIconFile" style="display:none" onchange="handleAnvilIconUpload(this)">
+            </div>
           </div>
           <div class="field">
             <label>Подпись цели</label>
@@ -739,6 +746,7 @@ body{ margin:0; font-family:'Nunito Sans', sans-serif;
   box-shadow:0 6px 0 rgba(0,0,0,0.45), 0 10px 22px rgba(0,0,0,0.35); font-size:36px; display:flex; align-items:center; justify-content:center; position:relative;
   transition:transform .08s ease, box-shadow .08s ease; }
 .anvil-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.35); }
+.anvil-icon-img{ width:56%; height:56%; object-fit:contain; display:block; pointer-events:none; }
 .anvil-label{ margin-top:8px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:var(--gold); letter-spacing:.04em; }
 .spark{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold); top:50%; left:50%; pointer-events:none; animation:spark-fly .55s ease-out forwards; }
 @keyframes spark-fly{ to{ transform:translate(var(--dx),var(--dy)) scale(0); opacity:0; } }
@@ -1332,9 +1340,10 @@ function handleAnvilClick(){
   let tier = 0;
   let isBonus = false;
   if(Math.random() < BONUS_CHANCE){
-    // Never hand out the final crown tier for free — cap one step below it.
-    const maxBonusTier = Math.min(2, TIERS.length-2);
-    if(maxBonusTier >= 1){ tier = 1 + Math.floor(Math.random()*maxBonusTier); isBonus = true; }
+    // Always exactly one level up (never random 1-or-2) so a bonus item reliably
+    // matches any other item of that same tier — whether another bonus roll or
+    // one built the normal way. Never hand out the final crown tier for free.
+    if(TIERS.length >= 3){ tier = 1; isBonus = true; }
   }
   board[idx] = tier;
   // Bonus items are exciting enough on their own — never also flag them with a question.
@@ -1998,6 +2007,24 @@ function resizeImageFile(file, maxDim){
   });
 }
 
+async function handleAnvilIconUpload(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  inputEl.value = '';
+  if(!file) return;
+  try{
+    const { dataUrl, width, height } = await resizeImageFile(file, MAX_ICON_DIM);
+    const kb = Math.round(dataUrl.length * 0.75 / 1024);
+    if(kb > MAX_DATAURL_KB){
+      showEditorToast('Картинка слишком «тяжёлая» даже после сжатия (~' + kb + ' КБ) — попробуй файл попроще.', 'error');
+      return;
+    }
+    config.anvilIcon = dataUrl;
+    render();
+    showEditorToast('Картинка загружена (' + width + '×' + height + 'px, ~' + kb + ' КБ) — встроена прямо в код игры.', 'success');
+  }catch(err){
+    showEditorToast('Не удалось загрузить картинку — попробуй другой файл (PNG, JPG, GIF, SVG).', 'error');
+  }
+}
 async function handleTierImageUpload(index, inputEl){
   const file = inputEl.files && inputEl.files[0];
   inputEl.value = ''; // allow re-selecting the same file later
@@ -2097,6 +2124,7 @@ function render(){
   document.getElementById('cfgAnvilLabel').value = config.anvilLabel;
   document.getElementById('cfgAnvilLabel').placeholder = themeLabels.anvil;
   document.getElementById('cfgAnvilIcon').value = config.anvilIcon;
+  document.getElementById('anvilIconPreview').innerHTML = iconPreviewInnerHTML(config.anvilIcon);
   document.getElementById('cfgObjectiveLabel').value = config.objectiveLabel;
   document.getElementById('cfgObjectiveLabel').placeholder = themeLabels.objective;
   applyUiTextPlaceholders(config.language);
@@ -2672,7 +2700,10 @@ function buildGameHTML(cfg){
   tpl = tpl.replaceAll('{{SCORE_BOOST_CHANCE}}', cfg.scoreBoostChance);
   tpl = tpl.replaceAll('{{TIERS_JSON}}', safe(cfg.tiers));
   tpl = tpl.replaceAll('{{QUESTIONS_JSON}}', safe(cfg.questions));
-  tpl = tpl.replaceAll('{{ANVIL_ICON}}', escapeHtml(cfg.anvilIcon));
+  const anvilIconHtml = isImageUrl(cfg.anvilIcon)
+    ? '<img src="' + escapeHtml(cfg.anvilIcon) + '" alt="" class="anvil-icon-img">'
+    : escapeHtml(cfg.anvilIcon);
+  tpl = tpl.replaceAll('{{ANVIL_ICON}}', anvilIconHtml);
   tpl = tpl.replaceAll('{{LANG}}', cfg.language || 'ru');
   const p = cfg.palette;
   tpl = tpl.replaceAll('{{C_BG_DEEP}}', p.bgDeep);
