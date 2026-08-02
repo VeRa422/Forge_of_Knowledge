@@ -437,6 +437,19 @@
       </div>
 
       <div class="panel">
+        <h2>🚪 Титульный экран</h2>
+        <div class="hint" style="margin-top:0; margin-bottom:10px;">Экран приветствия перед началом игры — показывает название и подзаголовок (цель игры) до того, как откроется поле. Использует те же «Заголовок игры» и «Подзаголовок» из панели выше.</div>
+        <div class="row">
+          <div class="field">
+            <label class="checkbox-label"><input type="checkbox" id="cfgShowIntro" checked> Показывать титульный экран перед началом игры</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:2;"><label>Текст кнопки «Начать»</label><input type="text" id="cfgIntroBtnLabel" placeholder="Начать игру"></div>
+        </div>
+      </div>
+
+      <div class="panel">
         <h2>🏆 Экран победы — тексты</h2>
         <div class="hint" style="margin-top:0; margin-bottom:10px;">Оставь поле пустым, чтобы использовать перевод по умолчанию (зависит от языка). Впиши свой текст — он полностью заменит стандартный.</div>
         <div class="row">
@@ -449,6 +462,19 @@
         </div>
         <div class="row">
           <div class="field" style="flex:2;"><label>Кнопка «Играть снова»</label><input type="text" id="cfgPlayAgain" placeholder="Играть снова"></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:2;">
+            <label>Иконка окна победы (по умолчанию — финальный предмет из цепочки)</label>
+            <div class="row" style="margin-bottom:0; align-items:center;">
+              <div class="icon-preview-wrap" style="flex:0 0 auto;">
+                <div class="icon-preview" id="victoryIconPreview"></div>
+              </div>
+              <input type="text" id="cfgVictoryIconOverride" style="flex:1; min-width:0;" placeholder="Пусто = финальный предмет">
+              <button type="button" class="small upload-btn" onclick="document.getElementById('victoryIconFile').click()" title="Загрузить картинку с компьютера">📁</button>
+              <input type="file" accept="image/*" id="victoryIconFile" style="display:none" onchange="handleVictoryIconUpload(this)">
+            </div>
+          </div>
         </div>
       </div>
 
@@ -498,6 +524,7 @@
         </div>
         <div class="row">
           <div class="field"><label>Размер заголовка победы (px)</label><input type="number" id="cfgVictoryFontSize" value="22" min="12" max="48"></div>
+          <div class="field"><label>Размер иконки победы (px)</label><input type="number" id="cfgVictoryIconSize" value="40" min="16" max="120"></div>
           <div class="field">
             <label>Победный эффект</label>
             <select id="cfgVictoryFx">
@@ -562,6 +589,49 @@
             </select>
           </div>
           <div class="field"><label>Размер текста кнопки (px)</label><input type="number" id="cfgContinueFontSize" value="15" min="10" max="28"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🚪 Титульный экран — оформление</h2>
+        <div class="row">
+          <div class="field"><label>Фон титульного экрана</label><input type="color" id="cfgIntroBgColor"></div>
+          <div class="field"><label>Цвет заголовка</label><input type="color" id="cfgIntroTitleColor"></div>
+          <div class="field"><label>Цвет подзаголовка</label><input type="color" id="cfgIntroSubtitleColor"></div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Шрифт заголовка</label>
+            <select id="cfgIntroFont">
+              <option value="Baloo 2" selected>Baloo 2 (по умолчанию)</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Nunito">Nunito</option>
+              <option value="Comfortaa">Comfortaa (округлый)</option>
+              <option value="Rubik">Rubik (современный)</option>
+              <option value="Playfair Display">Playfair Display (строгий)</option>
+              <option value="Oswald">Oswald (жирный, для заголовков)</option>
+            </select>
+          </div>
+          <div class="field"><label>Размер заголовка (px)</label><input type="number" id="cfgIntroFontSize" value="36" min="18" max="64"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Кнопка «Начать» — фон</label><input type="color" id="cfgIntroBtnBgColor"></div>
+          <div class="field"><label>Кнопка «Начать» — текст</label><input type="color" id="cfgIntroBtnTextColor"></div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Шрифт кнопки «Начать»</label>
+            <select id="cfgIntroBtnFont">
+              <option value="Baloo 2" selected>Baloo 2 (по умолчанию)</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Nunito">Nunito</option>
+              <option value="Comfortaa">Comfortaa (округлый)</option>
+              <option value="Rubik">Rubik (современный)</option>
+              <option value="Playfair Display">Playfair Display (строгий)</option>
+              <option value="Oswald">Oswald (жирный, для заголовков)</option>
+            </select>
+          </div>
+          <div class="field"><label>Размер текста кнопки (px)</label><input type="number" id="cfgIntroBtnFontSize" value="18" min="12" max="32"></div>
         </div>
       </div>
 
@@ -804,6 +874,18 @@ body{ margin:0; font-family:'Nunito Sans', sans-serif;
   font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; cursor:pointer; display:none;
   position:sticky; bottom:0; box-shadow:0 -8px 12px -6px rgba(0,0,0,0.35); }
 .continue-btn.show{ display:block; }
+.victory-icon{ text-align:center; line-height:1; margin-bottom:4px; }
+.victory-icon-img{ object-fit:contain; margin:0 auto; display:block; }
+.intro-overlay{ position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+  background:#141019; opacity:1; transition:opacity .35s ease; }
+.intro-overlay.hide{ opacity:0; pointer-events:none; }
+.intro-content{ text-align:center; max-width:640px; padding:32px; }
+.intro-content h1{ font-family:'Baloo 2',sans-serif; font-weight:800; font-size:clamp(28px,6vw,44px); margin:0 0 16px; line-height:1.2; color:#f6ead8; }
+.intro-content p{ font-family:'Nunito Sans',sans-serif; font-size:16px; line-height:1.55; margin:0 0 30px; color:#cbbfae; }
+.intro-start-btn{ padding:16px 38px; border-radius:999px; border:none; font-family:'Baloo 2',sans-serif; font-weight:800;
+  font-size:18px; cursor:pointer; background:var(--ember-dark); color:#fff; box-shadow:0 8px 20px rgba(0,0,0,.35);
+  transition:transform .12s ease, box-shadow .12s ease; }
+.intro-start-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,.4); }
 .victory h2{ font-size:22px; text-align:center; }
 .victory p{ text-align:center; font-size:14px; margin:6px 0 16px; }
 .victory .stats{ display:flex; justify-content:center; gap:18px; margin-bottom:16px; }
@@ -840,6 +922,13 @@ body{ margin:0; font-family:'Nunito Sans', sans-serif;
 </style>
 </head>
 <body>
+<div class="intro-overlay" id="introOverlay">
+  <div class="intro-content">
+    <h1 id="introTitle">{{TITLE}}</h1>
+    <p id="introSubtitle">{{SUBTITLE}}</p>
+    <button class="intro-start-btn" id="introStartBtn"></button>
+  </div>
+</div>
 <div class="app">
   <div class="hud">
     <button class="reset-btn" id="resetBtn">↺ Начать заново</button>
@@ -880,19 +969,21 @@ const BONUS_CHANCE = {{BONUS_CHANCE}};
 const NEIGHBOR_BOOST_CHANCE = {{NEIGHBOR_BOOST_CHANCE}};
 const SCORE_BOOST_CHANCE = {{SCORE_BOOST_CHANCE}};
 const SCORE_BOOST_USES = 3; // how many point-earning actions stay doubled once triggered
+const SHOW_INTRO = {{SHOW_INTRO}};
+const INTRO_OVERRIDES = {{INTRO_OVERRIDES_JSON}};
 const QUESTIONS = {{QUESTIONS_JSON}};
 const USE_LATEX = {{USE_LATEX}};
 const LANG = '{{LANG}}';
 const TRANSLATIONS = {
-  ru:{ reset:'↺ Начать заново', modalEyebrow:'Вопрос', correctFeedback:'Верно! ✨', wrongFeedback:'Не совсем — правильный ответ подсвечен.', continueBtn:'Продолжить', submitBtn:'Ответить', victoryDone:'Готово!', victorySub:'Цель достигнута.', playAgain:'Играть снова', statLabel:'очков знаний', toastNoRoom:'Поле заполнено! Соедини предметы, чтобы освободить место.', toastNoMaterial:'Материал не получен — попробуй ещё раз!', toastMaxTier:'Это финальный предмет — дальше сливать некуда!', toastMergeFail:'Слияние не удалось — предметы остались на месте.', toastBonusItem:'Бонус! Редкий предмет уровнем выше!', toastNeighborBoost:'Удар молнии! Соседние предметы слились без вопроса!', toastScoreBoost:'Очки x2! Следующие действия принесут вдвое больше!', muteOn:'Выключить звук', muteOff:'Включить звук' },
-  en:{ reset:'↺ Start Over', modalEyebrow:'Question', correctFeedback:'Correct! ✨', wrongFeedback:'Not quite — the correct answer is highlighted.', continueBtn:'Continue', submitBtn:'Submit', victoryDone:'Done!', victorySub:'Goal achieved.', playAgain:'Play Again', statLabel:'knowledge points', toastNoRoom:'Board is full! Merge items to free up space.', toastNoMaterial:'No material received — try again!', toastMaxTier:'This is the final item — nothing more to merge!', toastMergeFail:'Merge failed — items stayed in place.', toastBonusItem:'Bonus! A rare higher-tier item!', toastNeighborBoost:'Lightning strike! Neighboring items merged with no question!', toastScoreBoost:'Score x2! The next few actions earn double!', muteOn:'Mute sound', muteOff:'Unmute sound' },
-  de:{ reset:'↺ Neu starten', modalEyebrow:'Frage', correctFeedback:'Richtig! ✨', wrongFeedback:'Nicht ganz — die richtige Antwort ist markiert.', continueBtn:'Weiter', submitBtn:'Absenden', victoryDone:'Geschafft!', victorySub:'Ziel erreicht.', playAgain:'Nochmal spielen', statLabel:'Wissenspunkte', toastNoRoom:'Das Feld ist voll! Verschmelze Gegenstände, um Platz zu schaffen.', toastNoMaterial:'Kein Material erhalten — versuch\u2019s nochmal!', toastMaxTier:'Das ist der letzte Gegenstand — mehr geht nicht!', toastMergeFail:'Verschmelzung fehlgeschlagen — die Gegenstände blieben, wo sie waren.', toastBonusItem:'Bonus! Ein seltener Gegenstand der nächsten Stufe!', toastNeighborBoost:'Blitzschlag! Benachbarte Gegenstände wurden ohne Frage verschmolzen!', toastScoreBoost:'Punkte x2! Die nächsten Aktionen zählen doppelt!', muteOn:'Ton stumm schalten', muteOff:'Ton einschalten' },
-  fr:{ reset:'↺ Recommencer', modalEyebrow:'Question', correctFeedback:'Correct ! ✨', wrongFeedback:'Pas tout à fait — la bonne réponse est surlignée.', continueBtn:'Continuer', submitBtn:'Valider', victoryDone:'Terminé !', victorySub:'Objectif atteint.', playAgain:'Rejouer', statLabel:'points de connaissance', toastNoRoom:'Le plateau est plein ! Fusionne des objets pour libérer de la place.', toastNoMaterial:'Aucun matériau reçu — réessaie !', toastMaxTier:'C\u2019est l\u2019objet final — impossible de fusionner davantage !', toastMergeFail:'Fusion échouée — les objets sont restés en place.', toastBonusItem:'Bonus ! Un objet rare de niveau supérieur !', toastNeighborBoost:'Éclair ! Des objets voisins ont fusionné sans question !', toastScoreBoost:'Score x2 ! Les prochaines actions rapportent double !', muteOn:'Couper le son', muteOff:'Activer le son' },
-  es:{ reset:'↺ Empezar de nuevo', modalEyebrow:'Pregunta', correctFeedback:'¡Correcto! ✨', wrongFeedback:'No exactamente — la respuesta correcta está resaltada.', continueBtn:'Continuar', submitBtn:'Enviar', victoryDone:'¡Listo!', victorySub:'Objetivo alcanzado.', playAgain:'Jugar de nuevo', statLabel:'puntos de conocimiento', toastNoRoom:'¡El tablero está lleno! Combina objetos para hacer espacio.', toastNoMaterial:'No se obtuvo material — ¡inténtalo de nuevo!', toastMaxTier:'¡Este es el objeto final — no se puede combinar más!', toastMergeFail:'La combinación falló — los objetos quedaron en su lugar.', toastBonusItem:'¡Bono! ¡Un objeto raro de nivel superior!', toastNeighborBoost:'¡Rayo! ¡Objetos vecinos combinados sin pregunta!', toastScoreBoost:'¡Puntos x2! ¡Las próximas acciones valen el doble!', muteOn:'Silenciar sonido', muteOff:'Activar sonido' },
-  it:{ reset:'↺ Ricomincia', modalEyebrow:'Domanda', correctFeedback:'Corretto! ✨', wrongFeedback:'Non proprio — la risposta corretta è evidenziata.', continueBtn:'Continua', submitBtn:'Invia', victoryDone:'Fatto!', victorySub:'Obiettivo raggiunto.', playAgain:'Gioca ancora', statLabel:'punti conoscenza', toastNoRoom:'Il campo è pieno! Unisci gli oggetti per fare spazio.', toastNoMaterial:'Nessun materiale ricevuto — riprova!', toastMaxTier:'Questo è l\u2019oggetto finale — non si può unire oltre!', toastMergeFail:'Fusione non riuscita — gli oggetti sono rimasti al loro posto.', toastBonusItem:'Bonus! Un oggetto raro di livello superiore!', toastNeighborBoost:'Fulmine! Oggetti vicini uniti senza domanda!', toastScoreBoost:'Punti x2! Le prossime azioni valgono doppio!', muteOn:'Disattiva audio', muteOff:'Attiva audio' },
-  ko:{ reset:'↺ 다시 시작', modalEyebrow:'문제', correctFeedback:'정답이에요! ✨', wrongFeedback:'아쉬워요 — 정답이 표시되었어요.', continueBtn:'계속하기', submitBtn:'제출하기', victoryDone:'완료!', victorySub:'목표를 달성했어요.', playAgain:'다시 하기', statLabel:'지식 점수', toastNoRoom:'보드가 가득 찼어요! 아이템을 합쳐서 공간을 만드세요.', toastNoMaterial:'재료를 받지 못했어요 — 다시 시도하세요!', toastMaxTier:'이건 최종 아이템이에요 — 더 이상 합칠 수 없어요!', toastMergeFail:'합치기에 실패했어요 — 아이템이 그대로 남았어요.', toastBonusItem:'보너스! 상위 등급의 희귀 아이템!', toastNeighborBoost:'번개 타격! 인접한 아이템이 질문 없이 합쳐졌어요!', toastScoreBoost:'점수 x2! 다음 행동들은 두 배로 적립돼요!', muteOn:'소리 끄기', muteOff:'소리 켜기' },
-  zh:{ reset:'↺ 重新开始', modalEyebrow:'问题', correctFeedback:'答对了！✨', wrongFeedback:'不太对 — 正确答案已高亮显示。', continueBtn:'继续', submitBtn:'提交', victoryDone:'完成！', victorySub:'已达成目标。', playAgain:'再玩一次', statLabel:'知识点', toastNoRoom:'棋盘已满！合并物品以腾出空间。', toastNoMaterial:'未获得材料 — 请再试一次！', toastMaxTier:'这是最终物品 — 无法继续合并！', toastMergeFail:'合并失败 — 物品保持原位。', toastBonusItem:'奖励！更高级的稀有物品！', toastNeighborBoost:'闪电一击！相邻物品无需答题直接合并！', toastScoreBoost:'积分 x2！接下来的操作将获得双倍积分！', muteOn:'静音', muteOff:'取消静音' },
-  ja:{ reset:'↺ 最初から', modalEyebrow:'問題', correctFeedback:'正解！✨', wrongFeedback:'惜しい — 正解がハイライトされています。', continueBtn:'続ける', submitBtn:'送信', victoryDone:'完了！', victorySub:'目標達成。', playAgain:'もう一度プレイ', statLabel:'知識ポイント', toastNoRoom:'ボードがいっぱいです！アイテムを合成してスペースを空けてください。', toastNoMaterial:'素材を獲得できませんでした — もう一度試してください！', toastMaxTier:'これは最終アイテムです — これ以上合成できません！', toastMergeFail:'合成に失敗しました — アイテムはそのままです。', toastBonusItem:'ボーナス！レアな上位アイテム！', toastNeighborBoost:'稲妻！隣り合うアイテムが質問なしで合体しました！', toastScoreBoost:'スコア×2！次の行動は倍になります！', muteOn:'音を消す', muteOff:'音を出す' }
+  ru:{ reset:'↺ Начать заново', modalEyebrow:'Вопрос', correctFeedback:'Верно! ✨', wrongFeedback:'Не совсем — правильный ответ подсвечен.', continueBtn:'Продолжить', submitBtn:'Ответить', victoryDone:'Готово!', victorySub:'Цель достигнута.', playAgain:'Играть снова', statLabel:'очков знаний', toastNoRoom:'Поле заполнено! Соедини предметы, чтобы освободить место.', toastNoMaterial:'Материал не получен — попробуй ещё раз!', toastMaxTier:'Это финальный предмет — дальше сливать некуда!', toastMergeFail:'Слияние не удалось — предметы остались на месте.', toastBonusItem:'Бонус! Редкий предмет уровнем выше!', toastNeighborBoost:'Удар молнии! Соседние предметы слились без вопроса!', toastScoreBoost:'Очки x2! Следующие действия принесут вдвое больше!', muteOn:'Выключить звук', muteOff:'Включить звук', introStart:'Начать игру' },
+  en:{ reset:'↺ Start Over', modalEyebrow:'Question', correctFeedback:'Correct! ✨', wrongFeedback:'Not quite — the correct answer is highlighted.', continueBtn:'Continue', submitBtn:'Submit', victoryDone:'Done!', victorySub:'Goal achieved.', playAgain:'Play Again', statLabel:'knowledge points', toastNoRoom:'Board is full! Merge items to free up space.', toastNoMaterial:'No material received — try again!', toastMaxTier:'This is the final item — nothing more to merge!', toastMergeFail:'Merge failed — items stayed in place.', toastBonusItem:'Bonus! A rare higher-tier item!', toastNeighborBoost:'Lightning strike! Neighboring items merged with no question!', toastScoreBoost:'Score x2! The next few actions earn double!', muteOn:'Mute sound', muteOff:'Unmute sound', introStart:'Start Game' },
+  de:{ reset:'↺ Neu starten', modalEyebrow:'Frage', correctFeedback:'Richtig! ✨', wrongFeedback:'Nicht ganz — die richtige Antwort ist markiert.', continueBtn:'Weiter', submitBtn:'Absenden', victoryDone:'Geschafft!', victorySub:'Ziel erreicht.', playAgain:'Nochmal spielen', statLabel:'Wissenspunkte', toastNoRoom:'Das Feld ist voll! Verschmelze Gegenstände, um Platz zu schaffen.', toastNoMaterial:'Kein Material erhalten — versuch\u2019s nochmal!', toastMaxTier:'Das ist der letzte Gegenstand — mehr geht nicht!', toastMergeFail:'Verschmelzung fehlgeschlagen — die Gegenstände blieben, wo sie waren.', toastBonusItem:'Bonus! Ein seltener Gegenstand der nächsten Stufe!', toastNeighborBoost:'Blitzschlag! Benachbarte Gegenstände wurden ohne Frage verschmolzen!', toastScoreBoost:'Punkte x2! Die nächsten Aktionen zählen doppelt!', muteOn:'Ton stumm schalten', muteOff:'Ton einschalten', introStart:'Spiel starten' },
+  fr:{ reset:'↺ Recommencer', modalEyebrow:'Question', correctFeedback:'Correct ! ✨', wrongFeedback:'Pas tout à fait — la bonne réponse est surlignée.', continueBtn:'Continuer', submitBtn:'Valider', victoryDone:'Terminé !', victorySub:'Objectif atteint.', playAgain:'Rejouer', statLabel:'points de connaissance', toastNoRoom:'Le plateau est plein ! Fusionne des objets pour libérer de la place.', toastNoMaterial:'Aucun matériau reçu — réessaie !', toastMaxTier:'C\u2019est l\u2019objet final — impossible de fusionner davantage !', toastMergeFail:'Fusion échouée — les objets sont restés en place.', toastBonusItem:'Bonus ! Un objet rare de niveau supérieur !', toastNeighborBoost:'Éclair ! Des objets voisins ont fusionné sans question !', toastScoreBoost:'Score x2 ! Les prochaines actions rapportent double !', muteOn:'Couper le son', muteOff:'Activer le son', introStart:'Commencer' },
+  es:{ reset:'↺ Empezar de nuevo', modalEyebrow:'Pregunta', correctFeedback:'¡Correcto! ✨', wrongFeedback:'No exactamente — la respuesta correcta está resaltada.', continueBtn:'Continuar', submitBtn:'Enviar', victoryDone:'¡Listo!', victorySub:'Objetivo alcanzado.', playAgain:'Jugar de nuevo', statLabel:'puntos de conocimiento', toastNoRoom:'¡El tablero está lleno! Combina objetos para hacer espacio.', toastNoMaterial:'No se obtuvo material — ¡inténtalo de nuevo!', toastMaxTier:'¡Este es el objeto final — no se puede combinar más!', toastMergeFail:'La combinación falló — los objetos quedaron en su lugar.', toastBonusItem:'¡Bono! ¡Un objeto raro de nivel superior!', toastNeighborBoost:'¡Rayo! ¡Objetos vecinos combinados sin pregunta!', toastScoreBoost:'¡Puntos x2! ¡Las próximas acciones valen el doble!', muteOn:'Silenciar sonido', muteOff:'Activar sonido', introStart:'Empezar' },
+  it:{ reset:'↺ Ricomincia', modalEyebrow:'Domanda', correctFeedback:'Corretto! ✨', wrongFeedback:'Non proprio — la risposta corretta è evidenziata.', continueBtn:'Continua', submitBtn:'Invia', victoryDone:'Fatto!', victorySub:'Obiettivo raggiunto.', playAgain:'Gioca ancora', statLabel:'punti conoscenza', toastNoRoom:'Il campo è pieno! Unisci gli oggetti per fare spazio.', toastNoMaterial:'Nessun materiale ricevuto — riprova!', toastMaxTier:'Questo è l\u2019oggetto finale — non si può unire oltre!', toastMergeFail:'Fusione non riuscita — gli oggetti sono rimasti al loro posto.', toastBonusItem:'Bonus! Un oggetto raro di livello superiore!', toastNeighborBoost:'Fulmine! Oggetti vicini uniti senza domanda!', toastScoreBoost:'Punti x2! Le prossime azioni valgono doppio!', muteOn:'Disattiva audio', muteOff:'Attiva audio', introStart:'Inizia gioco' },
+  ko:{ reset:'↺ 다시 시작', modalEyebrow:'문제', correctFeedback:'정답이에요! ✨', wrongFeedback:'아쉬워요 — 정답이 표시되었어요.', continueBtn:'계속하기', submitBtn:'제출하기', victoryDone:'완료!', victorySub:'목표를 달성했어요.', playAgain:'다시 하기', statLabel:'지식 점수', toastNoRoom:'보드가 가득 찼어요! 아이템을 합쳐서 공간을 만드세요.', toastNoMaterial:'재료를 받지 못했어요 — 다시 시도하세요!', toastMaxTier:'이건 최종 아이템이에요 — 더 이상 합칠 수 없어요!', toastMergeFail:'합치기에 실패했어요 — 아이템이 그대로 남았어요.', toastBonusItem:'보너스! 상위 등급의 희귀 아이템!', toastNeighborBoost:'번개 타격! 인접한 아이템이 질문 없이 합쳐졌어요!', toastScoreBoost:'점수 x2! 다음 행동들은 두 배로 적립돼요!', muteOn:'소리 끄기', muteOff:'소리 켜기', introStart:'게임 시작' },
+  zh:{ reset:'↺ 重新开始', modalEyebrow:'问题', correctFeedback:'答对了！✨', wrongFeedback:'不太对 — 正确答案已高亮显示。', continueBtn:'继续', submitBtn:'提交', victoryDone:'完成！', victorySub:'已达成目标。', playAgain:'再玩一次', statLabel:'知识点', toastNoRoom:'棋盘已满！合并物品以腾出空间。', toastNoMaterial:'未获得材料 — 请再试一次！', toastMaxTier:'这是最终物品 — 无法继续合并！', toastMergeFail:'合并失败 — 物品保持原位。', toastBonusItem:'奖励！更高级的稀有物品！', toastNeighborBoost:'闪电一击！相邻物品无需答题直接合并！', toastScoreBoost:'积分 x2！接下来的操作将获得双倍积分！', muteOn:'静音', muteOff:'取消静音', introStart:'开始游戏' },
+  ja:{ reset:'↺ 最初から', modalEyebrow:'問題', correctFeedback:'正解！✨', wrongFeedback:'惜しい — 正解がハイライトされています。', continueBtn:'続ける', submitBtn:'送信', victoryDone:'完了！', victorySub:'目標達成。', playAgain:'もう一度プレイ', statLabel:'知識ポイント', toastNoRoom:'ボードがいっぱいです！アイテムを合成してスペースを空けてください。', toastNoMaterial:'素材を獲得できませんでした — もう一度試してください！', toastMaxTier:'これは最終アイテムです — これ以上合成できません！', toastMergeFail:'合成に失敗しました — アイテムはそのままです。', toastBonusItem:'ボーナス！レアな上位アイテム！', toastNeighborBoost:'稲妻！隣り合うアイテムが質問なしで合体しました！', toastScoreBoost:'スコア×2！次の行動は倍になります！', muteOn:'音を消す', muteOff:'音を出す', introStart:'ゲームを始める' }
 };
 const T = TRANSLATIONS[LANG] || TRANSLATIONS.ru;
 const VICTORY_OVERRIDES = {{VICTORY_OVERRIDES_JSON}};
@@ -1230,13 +1321,27 @@ function renderVictoryModal(previewScore){
   const playAgainText = vo.playAgain || T.playAgain;
   const displayScore = (previewScore !== undefined && previewScore !== null) ? previewScore : score;
   modalEl.innerHTML =
-    '<h2>' + iconHtml(TIERS[TIERS.length-1]?TIERS[TIERS.length-1].emoji:'🏆') + ' ' + doneText + '</h2>' +
+    '<div class="victory-icon"></div>' +
+    '<h2>' + doneText + '</h2>' +
     '<p>' + subText + '</p>' +
     '<div class="stats"><div class="stat"><b>'+displayScore+'</b><span>'+statText+'</span></div></div>' +
     '<button class="continue-btn show">' + playAgainText + '</button>';
   modalEl.style.background = vo.bgColor;
   modalEl.style.color = vo.textColor;
   modalEl.style.borderColor = 'transparent';
+  const finalTierIcon = (vo.iconOverride && vo.iconOverride.trim())
+    ? vo.iconOverride.trim()
+    : (TIERS[TIERS.length-1] ? TIERS[TIERS.length-1].emoji : '🏆');
+  const iconEl = modalEl.querySelector('.victory-icon');
+  const iconSize = vo.iconSize || 40;
+  if(isImageUrl(finalTierIcon)){
+    iconEl.innerHTML = iconHtml(finalTierIcon, 'victory-icon-img');
+    const img = iconEl.querySelector('img');
+    if(img){ img.style.width = iconSize + 'px'; img.style.height = iconSize + 'px'; }
+  } else {
+    iconEl.textContent = finalTierIcon;
+    iconEl.style.fontSize = iconSize + 'px';
+  }
   const h2El = modalEl.querySelector('h2');
   h2El.style.fontFamily = "'" + vo.font + "', 'Baloo 2', sans-serif";
   h2El.style.fontSize = vo.fontSize + 'px';
@@ -1427,6 +1532,31 @@ volSlider.value = gameVolume;
 updateVolIcon();
 renderChain();
 renderBoard(); renderHUD();
+initIntroScreen();
+function initIntroScreen(){
+  const introOverlay = document.getElementById('introOverlay');
+  if(!SHOW_INTRO){ introOverlay.remove(); return; }
+  const io = INTRO_OVERRIDES;
+  const titleBlock = document.querySelector('.title-block');
+  if(titleBlock) titleBlock.style.display = 'none'; // shown on the intro screen instead — no need for it to linger during play
+  introOverlay.style.background = io.bg || '#141019';
+  const introTitleEl = document.getElementById('introTitle');
+  introTitleEl.style.color = io.titleColor || '#f6ead8';
+  introTitleEl.style.fontFamily = "'" + (io.font || 'Baloo 2') + "', 'Baloo 2', sans-serif";
+  if(io.fontSize) introTitleEl.style.fontSize = io.fontSize + 'px';
+  const introSubEl = document.getElementById('introSubtitle');
+  introSubEl.style.color = io.subtitleColor || '#cbbfae';
+  const startBtn = document.getElementById('introStartBtn');
+  startBtn.textContent = io.btnLabel || T.introStart;
+  startBtn.style.background = io.btnBg || 'var(--ember-dark)';
+  startBtn.style.color = io.btnTextColor || '#ffffff';
+  startBtn.style.fontFamily = "'" + (io.btnFont || 'Baloo 2') + "', 'Baloo 2', sans-serif";
+  if(io.btnFontSize) startBtn.style.fontSize = io.btnFontSize + 'px';
+  startBtn.addEventListener('click', () => {
+    introOverlay.classList.add('hide');
+    setTimeout(() => introOverlay.remove(), 400);
+  });
+}
 </script>
 </body>
 </html>
@@ -1841,6 +1971,17 @@ function sampleConfig(){
     embedWidth: '100%',
     embedHeight: 700,
     language: 'ru',
+    showIntro: true,
+    introBtnLabelText: '',
+    introBgColor: '#141019',
+    introTitleColor: '#f6ead8',
+    introSubtitleColor: '#cbbfae',
+    introFont: 'Baloo 2',
+    introFontSize: 36,
+    introBtnBgColor: '#c94f1c',
+    introBtnTextColor: '#ffffff',
+    introBtnFont: 'Baloo 2',
+    introBtnFontSize: 18,
     resetLabel: '',
     victoryDoneText: '',
     victorySubText: '',
@@ -1848,6 +1989,7 @@ function sampleConfig(){
     playAgainText: '',
     victoryFont: 'Baloo 2',
     victoryFontSize: 22,
+    victoryIconSize: 40,
     victoryTextColor: '#3a2a1c',
     victoryBgColor: '#f6ead8',
     victoryFx: 'confetti',
@@ -2007,6 +2149,24 @@ function resizeImageFile(file, maxDim){
   });
 }
 
+async function handleVictoryIconUpload(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  inputEl.value = '';
+  if(!file) return;
+  try{
+    const { dataUrl, width, height } = await resizeImageFile(file, MAX_ICON_DIM);
+    const kb = Math.round(dataUrl.length * 0.75 / 1024);
+    if(kb > MAX_DATAURL_KB){
+      showEditorToast('Картинка слишком «тяжёлая» даже после сжатия (~' + kb + ' КБ) — попробуй файл попроще.', 'error');
+      return;
+    }
+    config.victoryIconOverride = dataUrl;
+    render();
+    showEditorToast('Картинка загружена (' + width + '×' + height + 'px, ~' + kb + ' КБ) — встроена прямо в код игры.', 'success');
+  }catch(err){
+    showEditorToast('Не удалось загрузить картинку — попробуй другой файл (PNG, JPG, GIF, SVG).', 'error');
+  }
+}
 async function handleAnvilIconUpload(inputEl){
   const file = inputEl.files && inputEl.files[0];
   inputEl.value = '';
@@ -2141,13 +2301,27 @@ function render(){
   document.getElementById('cfgEmbedWidth').value = config.embedWidth || '100%';
   document.getElementById('cfgEmbedHeight').value = config.embedHeight || 700;
   document.getElementById('cfgLanguage').value = config.language || 'ru';
+  document.getElementById('cfgShowIntro').checked = config.showIntro !== false;
+  document.getElementById('cfgIntroBtnLabel').value = config.introBtnLabelText || '';
+  document.getElementById('cfgIntroBgColor').value = config.introBgColor || '#141019';
+  document.getElementById('cfgIntroTitleColor').value = config.introTitleColor || '#f6ead8';
+  document.getElementById('cfgIntroSubtitleColor').value = config.introSubtitleColor || '#cbbfae';
+  document.getElementById('cfgIntroFont').value = config.introFont || 'Baloo 2';
+  document.getElementById('cfgIntroFontSize').value = config.introFontSize || 36;
+  document.getElementById('cfgIntroBtnBgColor').value = config.introBtnBgColor || '#c94f1c';
+  document.getElementById('cfgIntroBtnTextColor').value = config.introBtnTextColor || '#ffffff';
+  document.getElementById('cfgIntroBtnFont').value = config.introBtnFont || 'Baloo 2';
+  document.getElementById('cfgIntroBtnFontSize').value = config.introBtnFontSize || 18;
   document.getElementById('cfgResetLabel').value = config.resetLabel || '';
   document.getElementById('cfgVictoryDone').value = config.victoryDoneText || '';
   document.getElementById('cfgVictorySub').value = config.victorySubText || '';
   document.getElementById('cfgStatLabel').value = config.statLabelText || '';
   document.getElementById('cfgPlayAgain').value = config.playAgainText || '';
+  document.getElementById('cfgVictoryIconOverride').value = config.victoryIconOverride || '';
+  document.getElementById('victoryIconPreview').innerHTML = iconPreviewInnerHTML(config.victoryIconOverride || (config.tiers[config.tiers.length-1] || {}).emoji || '🏆');
   document.getElementById('cfgVictoryFont').value = config.victoryFont || 'Baloo 2';
   document.getElementById('cfgVictoryFontSize').value = config.victoryFontSize || 22;
+  document.getElementById('cfgVictoryIconSize').value = config.victoryIconSize || 40;
   document.getElementById('cfgVictoryTextColor').value = config.victoryTextColor || '#3a2a1c';
   document.getElementById('cfgVictoryBgColor').value = config.victoryBgColor || '#f6ead8';
   document.getElementById('cfgVictoryFx').value = config.victoryFx || 'confetti';
@@ -2306,13 +2480,26 @@ function syncSettings(){
   config.embedWidth = document.getElementById('cfgEmbedWidth').value || '100%';
   config.embedHeight = parseInt(document.getElementById('cfgEmbedHeight').value) || 700;
   config.language = document.getElementById('cfgLanguage').value || 'ru';
+  config.showIntro = document.getElementById('cfgShowIntro').checked;
+  config.introBtnLabelText = document.getElementById('cfgIntroBtnLabel').value;
+  config.introBgColor = document.getElementById('cfgIntroBgColor').value || '#141019';
+  config.introTitleColor = document.getElementById('cfgIntroTitleColor').value || '#f6ead8';
+  config.introSubtitleColor = document.getElementById('cfgIntroSubtitleColor').value || '#cbbfae';
+  config.introFont = document.getElementById('cfgIntroFont').value || 'Baloo 2';
+  config.introFontSize = parseInt(document.getElementById('cfgIntroFontSize').value) || 36;
+  config.introBtnBgColor = document.getElementById('cfgIntroBtnBgColor').value || '#c94f1c';
+  config.introBtnTextColor = document.getElementById('cfgIntroBtnTextColor').value || '#ffffff';
+  config.introBtnFont = document.getElementById('cfgIntroBtnFont').value || 'Baloo 2';
+  config.introBtnFontSize = parseInt(document.getElementById('cfgIntroBtnFontSize').value) || 18;
   config.resetLabel = document.getElementById('cfgResetLabel').value;
   config.victoryDoneText = document.getElementById('cfgVictoryDone').value;
   config.victorySubText = document.getElementById('cfgVictorySub').value;
   config.statLabelText = document.getElementById('cfgStatLabel').value;
   config.playAgainText = document.getElementById('cfgPlayAgain').value;
+  config.victoryIconOverride = document.getElementById('cfgVictoryIconOverride').value.trim();
   config.victoryFont = document.getElementById('cfgVictoryFont').value || 'Baloo 2';
   config.victoryFontSize = parseInt(document.getElementById('cfgVictoryFontSize').value) || 22;
+  config.victoryIconSize = parseInt(document.getElementById('cfgVictoryIconSize').value) || 40;
   config.victoryTextColor = document.getElementById('cfgVictoryTextColor').value || '#3a2a1c';
   config.victoryBgColor = document.getElementById('cfgVictoryBgColor').value || '#f6ead8';
   config.victoryFx = document.getElementById('cfgVictoryFx').value || 'confetti';
@@ -2675,7 +2862,7 @@ function downloadCSVTemplate(){
 
 
 
-['cfgTitle','cfgSubtitle','cfgAnvilLabel','cfgAnvilIcon','cfgObjectiveLabel','cfgCols','cfgRows','cfgChance','cfgBonusChance','cfgNeighborBoostChance','cfgScoreBoostChance','cfgTarget','cfgUseLatex','cfgTransparentBg','cfgEmbedMode','cfgEmbedWidth','cfgEmbedHeight','cfgLanguage','cfgResetLabel','cfgVictoryDone','cfgVictorySub','cfgStatLabel','cfgPlayAgain','cfgVictoryFont','cfgVictoryFontSize','cfgVictoryTextColor','cfgVictoryBgColor','cfgVictoryFx','cfgQuestionBgColor','cfgQuestionBorderColor','cfgQuestionTextColor','cfgGlowColor','cfgResetBgColor','cfgResetTextColor','cfgAnswerTextColor','cfgFinalBorderColor','cfgPlayAgainBgColor','cfgPlayAgainTextColor','cfgPlayAgainFont','cfgPlayAgainFontSize','cfgModalEyebrow','cfgContinueBtn','cfgCorrectFeedback','cfgWrongFeedback','cfgVictoryScoreColor','cfgTitleFont','cfgTitleColor','cfgSubtitleColor','cfgBoardBgColor','cfgCellBgColor','cfgScorePillBgColor','cfgScorePillTextColor','cfgContinueBgColor','cfgContinueTextColor','cfgContinueFont','cfgContinueFontSize','cfgIconScale']
+['cfgTitle','cfgSubtitle','cfgAnvilLabel','cfgAnvilIcon','cfgObjectiveLabel','cfgCols','cfgRows','cfgChance','cfgBonusChance','cfgNeighborBoostChance','cfgScoreBoostChance','cfgTarget','cfgUseLatex','cfgTransparentBg','cfgEmbedMode','cfgEmbedWidth','cfgEmbedHeight','cfgLanguage','cfgShowIntro','cfgIntroBtnLabel','cfgIntroBgColor','cfgIntroTitleColor','cfgIntroSubtitleColor','cfgIntroFont','cfgIntroFontSize','cfgIntroBtnBgColor','cfgIntroBtnTextColor','cfgIntroBtnFont','cfgIntroBtnFontSize','cfgResetLabel','cfgVictoryDone','cfgVictorySub','cfgStatLabel','cfgPlayAgain','cfgVictoryIconOverride','cfgVictoryFont','cfgVictoryFontSize','cfgVictoryIconSize','cfgVictoryTextColor','cfgVictoryBgColor','cfgVictoryFx','cfgQuestionBgColor','cfgQuestionBorderColor','cfgQuestionTextColor','cfgGlowColor','cfgResetBgColor','cfgResetTextColor','cfgAnswerTextColor','cfgFinalBorderColor','cfgPlayAgainBgColor','cfgPlayAgainTextColor','cfgPlayAgainFont','cfgPlayAgainFontSize','cfgModalEyebrow','cfgContinueBtn','cfgCorrectFeedback','cfgWrongFeedback','cfgVictoryScoreColor','cfgTitleFont','cfgTitleColor','cfgSubtitleColor','cfgBoardBgColor','cfgCellBgColor','cfgScorePillBgColor','cfgScorePillTextColor','cfgContinueBgColor','cfgContinueTextColor','cfgContinueFont','cfgContinueFontSize','cfgIconScale']
   .forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('input', syncSettings);
@@ -2746,6 +2933,19 @@ function buildGameHTML(cfg){
       'radial-gradient(ellipse at 50% -10%, color-mix(in srgb, ' + p.ember + ' 18%, transparent), transparent 55%), ' +
       'radial-gradient(ellipse at 50% 110%, color-mix(in srgb, ' + p.ember + ' 10%, transparent), transparent 60%), ' + p.bgDeep);
   }
+  tpl = tpl.replaceAll('{{SHOW_INTRO}}', cfg.showIntro !== false ? 'true' : 'false');
+  tpl = tpl.replaceAll('{{INTRO_OVERRIDES_JSON}}', safe({
+    bg: cfg.introBgColor || '#141019',
+    titleColor: cfg.introTitleColor || '#f6ead8',
+    subtitleColor: cfg.introSubtitleColor || '#cbbfae',
+    font: cfg.introFont || 'Baloo 2',
+    fontSize: cfg.introFontSize || 36,
+    btnBg: cfg.introBtnBgColor || '#c94f1c',
+    btnTextColor: cfg.introBtnTextColor || '#ffffff',
+    btnFont: cfg.introBtnFont || 'Baloo 2',
+    btnFontSize: cfg.introBtnFontSize || 18,
+    btnLabel: cfg.introBtnLabelText || ''
+  }));
   tpl = tpl.replaceAll('{{VICTORY_OVERRIDES_JSON}}', safe({
     reset: cfg.resetLabel || '',
     victoryDone: cfg.victoryDoneText || '',
@@ -2754,6 +2954,8 @@ function buildGameHTML(cfg){
     playAgain: cfg.playAgainText || '',
     font: cfg.victoryFont || 'Baloo 2',
     fontSize: cfg.victoryFontSize || 22,
+    iconSize: cfg.victoryIconSize || 40,
+    iconOverride: cfg.victoryIconOverride || '',
     textColor: cfg.victoryTextColor || '#3a2a1c',
     bgColor: cfg.victoryBgColor || '#f6ead8',
     fx: cfg.victoryFx || 'confetti',
@@ -2775,7 +2977,9 @@ function buildGameHTML(cfg){
   const playAgainFontName = (cfg.playAgainFont || 'Baloo 2').trim();
   const titleFontName = (cfg.titleFont || 'Baloo 2').trim();
   const continueFontName = (cfg.continueFont || 'Baloo 2').trim();
-  const fontFamilies = [...new Set([victoryFontName, playAgainFontName, titleFontName, continueFontName])];
+  const introFontName = (cfg.introFont || 'Baloo 2').trim();
+  const introBtnFontName = (cfg.introBtnFont || 'Baloo 2').trim();
+  const fontFamilies = [...new Set([victoryFontName, playAgainFontName, titleFontName, continueFontName, introFontName, introBtnFontName])];
   const familyParams = fontFamilies.map(f => 'family=' + encodeURIComponent(f).replace(/%20/g,'+') + ':wght@700;800').join('&');
   tpl = tpl.replaceAll('{{VICTORY_FONT_IMPORT_URL}}',
     'https://fonts.googleapis.com/css2?' + familyParams + '&display=swap');
