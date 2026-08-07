@@ -147,18 +147,24 @@
   .item-card input[type=text].icon-input.grow{ width:100%; font-size:13px; padding:9px 10px; box-sizing:border-box; }
   .upload-btn{ font-size:10px; line-height:1.3; padding:7px 10px; white-space:nowrap; }
 
-  /* Question bank: one table-style row per question, columns: №, type, question, answers, delete */
+  /* Question bank: one card per question — left column is type+question stacked
+     top-to-bottom, right column is the answers, sized independently so a short
+     question doesn't leave a big awkward gap under a tall answers list. */
   .q-table-header{
-    display:grid; grid-template-columns:20px 96px 1.15fr 1.35fr 22px; gap:8px;
+    display:grid; grid-template-columns:1fr 1.3fr; gap:10px;
     padding:0 2px 6px; font-size:10px; font-weight:800; text-transform:uppercase;
     letter-spacing:.04em; color:var(--dim);
   }
   .q-row{
-    display:grid; grid-template-columns:20px 96px 1.15fr 1.35fr 22px; gap:8px;
+    display:grid; grid-template-columns:1fr 1.3fr; gap:10px;
     align-items:start; background:var(--panel-2); border-left:3px solid var(--accent);
     border-radius:8px; padding:8px; margin-bottom:8px;
   }
-  .q-index{ font-size:11px; font-weight:800; color:var(--dim); padding-top:8px; }
+  .q-row-left{ display:flex; flex-direction:column; gap:6px; }
+  .q-row-head{ display:flex; align-items:center; gap:6px; }
+  .q-row-head .q-index{ flex:0 0 auto; font-size:11px; font-weight:800; color:var(--dim); }
+  .q-row-head .q-type-select{ flex:1 1 auto; min-width:0; }
+  .q-row-head .q-del-btn{ flex:0 0 auto; padding:5px 8px; }
   .q-type-select{
     width:100%; padding:7px 6px; font-size:11px; border-radius:6px; box-sizing:border-box;
     border:1px solid var(--border); background:#181820; color:var(--accent-2); font-weight:700; cursor:pointer;
@@ -191,7 +197,6 @@
     background:none; color:var(--dim); cursor:pointer; font-size:12px;
   }
   .q-add-wrong:hover{ color:var(--ok); border-color:var(--ok); }
-  .q-del-btn{ padding:5px 8px; margin-top:2px; }
 
   .q-multi-list, .q-order-list{ display:flex; flex-direction:column; gap:5px; }
   .q-multi-row, .q-order-row{ display:flex; align-items:center; gap:6px; }
@@ -225,8 +230,6 @@
   @media (max-width:980px){
     .q-table-header{ display:none; }
     .q-row{ grid-template-columns:1fr; }
-    .q-index{ padding-top:0; }
-    .q-del-btn{ justify-self:start; }
   }
 
   .preview-wrap{ height:100%; min-height:0; display:flex; flex-direction:column; }
@@ -1013,6 +1016,13 @@ body{ margin:0; font-family:'Nunito Sans', sans-serif;
   .objective{ grid-area:objective; margin-bottom:0; }
   .board{ grid-area:board; align-self:center; width:100%; max-width:560px; margin:0 auto; }
   .anvil-wrap{ grid-area:anvil; margin-top:16px; align-items:flex-start; }
+  .app.no-title-row{
+    grid-template-areas:
+      "hud    hud"
+      "chain  board"
+      "objective board"
+      "anvil  board";
+  }
 }
 </style>
 </head>
@@ -1661,6 +1671,13 @@ function initIntroScreen(){
   if(SHOW_INTRO){
     const titleBlock = document.querySelector('.title-block');
     if(titleBlock) titleBlock.style.display = 'none'; // shown on the intro screen instead — no need for it to linger during play
+    const appEl = document.querySelector('.app');
+    // Without this, the wide desktop layout still reserves an empty grid row where
+    // the title used to sit, leaving an ugly gap above chain/objective/anvil that
+    // gets more visible the taller the real embed is (barely noticeable in a short
+    // editor preview, glaring in a full-height Genially slide) — same bug, just more
+    // visible at larger sizes, which is why it looked fine in the constructor preview.
+    if(appEl) appEl.classList.add('no-title-row');
   } else {
     introOverlay.classList.add('hide');
   }
@@ -2597,15 +2614,19 @@ function render(){
     ).join('');
     return `
     <div class="q-row">
-      <span class="q-index">${qi+1}.</span>
-      <select class="q-type-select" onchange="changeQuestionTypeInline(${qi}, this.value)" title="Тип вопроса">${typeOptions}</select>
-      <div class="q-row-question">${qaFieldCellHTML(qi,'q',null,q.q,'Текст вопроса','q-main')}</div>
+      <div class="q-row-left">
+        <div class="q-row-head">
+          <span class="q-index">${qi+1}.</span>
+          <select class="q-type-select" onchange="changeQuestionTypeInline(${qi}, this.value)" title="Тип вопроса">${typeOptions}</select>
+          <button class="danger small q-del-btn" onclick="removeQuestion(${qi})" title="Удалить вопрос">✕</button>
+        </div>
+        <div class="q-row-question">${qaFieldCellHTML(qi,'q',null,q.q,'Текст вопроса','q-main')}</div>
+      </div>
       <div class="q-row-body">${body}</div>
-      <button class="danger small q-del-btn" onclick="removeQuestion(${qi})" title="Удалить вопрос">✕</button>
     </div>`;
   }).join('');
   const questionsHeader = config.questions.length
-    ? `<div class="q-table-header"><span></span><span>Тип</span><span>Вопрос</span><span>Ответы</span><span></span></div>`
+    ? `<div class="q-table-header"><span>Тип и вопрос</span><span>Ответы</span></div>`
     : '';
   document.getElementById('questionsList').innerHTML = questionsHeader + questionRows;
   requestAnimationFrame(() => {
@@ -3211,15 +3232,16 @@ function renderPreview(){
 /* ============= Preview zoom — mouse wheel + fit-to-screen, so the game preview
    always shows at a real, readable size no matter how big or small the browser
    window is, instead of sitting tiny and centered in empty space.
-   Base size is WIDE (like a real Genially slide) — the game's own CSS switches
-   to its horizontal/desktop layout above 680px wide, which is what real embeds
-   use, so the preview needs to be wide too, not a narrow phone-shaped strip. ============= */
+   Base size is a real 16:9 slide shape (like a Genially slide) — the configurable
+   "Высота iframe" setting is about the embed code's height attribute, not the
+   preview's shape, so it's intentionally not used here: a real Genially slide is
+   always 16:9 regardless of that number, and the preview should show exactly that. ============= */
 const PREVIEW_BASE_W = 960;
+const PREVIEW_BASE_H = Math.round(PREVIEW_BASE_W * 9 / 16); // 540 — true 16:9
 const ZOOM_MIN = 0.2, ZOOM_MAX = 2.5;
 let previewZoom = 1;
 function getPreviewBaseH(){
-  const h = config && config.embedHeight;
-  return (typeof h === 'number' && h > 0) ? h : 700;
+  return PREVIEW_BASE_H;
 }
 function applyZoom(){
   const frame = document.getElementById('previewFrame');
