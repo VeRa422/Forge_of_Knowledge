@@ -418,6 +418,10 @@
             <label>Подпись на кнопке-молоте</label>
             <input type="text" id="cfgAnvilLabel">
           </div>
+          <div class="field" style="flex:0 0 90px;">
+            <label>Цвет подписи</label>
+            <input type="color" id="cfgAnvilLabelColor">
+          </div>
           <div class="field">
             <label>Иконка на кнопке (эмодзи или картинка)</label>
             <div class="row" style="margin-bottom:0; align-items:center;">
@@ -475,6 +479,7 @@
               <input type="file" accept="image/*" id="victoryIconFile" style="display:none" onchange="handleVictoryIconUpload(this)">
             </div>
           </div>
+          <div class="field"><label>Размер иконки победы (px)</label><input type="number" id="cfgVictoryIconSize" value="40" min="16" max="120"></div>
         </div>
       </div>
 
@@ -524,7 +529,6 @@
         </div>
         <div class="row">
           <div class="field"><label>Размер заголовка победы (px)</label><input type="number" id="cfgVictoryFontSize" value="22" min="12" max="48"></div>
-          <div class="field"><label>Размер иконки победы (px)</label><input type="number" id="cfgVictoryIconSize" value="40" min="16" max="120"></div>
           <div class="field">
             <label>Победный эффект</label>
             <select id="cfgVictoryFx">
@@ -596,8 +600,25 @@
         <h2>🚪 Титульный экран — оформление</h2>
         <div class="row">
           <div class="field"><label>Фон титульного экрана</label><input type="color" id="cfgIntroBgColor"></div>
+          <div class="field">
+            <label>Прозрачность фона (<span id="introBgOpacityVal">100</span>%)</label>
+            <input type="range" id="cfgIntroBgOpacity" min="0" max="100" step="1" value="100" oninput="document.getElementById('introBgOpacityVal').textContent=this.value">
+          </div>
           <div class="field"><label>Цвет заголовка</label><input type="color" id="cfgIntroTitleColor"></div>
           <div class="field"><label>Цвет подзаголовка</label><input type="color" id="cfgIntroSubtitleColor"></div>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:2;">
+            <label>Фоновая картинка (необязательно — цвет и прозрачность выше становятся полупрозрачной «плёнкой» поверх неё)</label>
+            <div class="row" style="margin-bottom:0; align-items:center;">
+              <div class="icon-preview-wrap" style="flex:0 0 auto;">
+                <div class="icon-preview" id="introBgImagePreview"></div>
+              </div>
+              <input type="text" id="cfgIntroBgImage" style="flex:1; min-width:0;" placeholder="Пусто = только цвет фона">
+              <button type="button" class="small upload-btn" onclick="document.getElementById('introBgImageFile').click()" title="Загрузить картинку с компьютера">📁</button>
+              <input type="file" accept="image/*" id="introBgImageFile" style="display:none" onchange="handleIntroBgImageUpload(this)">
+            </div>
+          </div>
         </div>
         <div class="row">
           <div class="field">
@@ -688,11 +709,11 @@
       </h2>
       <div class="preview-mode-toggle">
         <button type="button" class="mode-btn active" id="modeBtnBoard" onclick="setPreviewMode('board')">🎮 Игровое поле</button>
-
+        <button type="button" class="mode-btn" id="modeBtnIntro" onclick="setPreviewMode('intro')">🚪 Титульный экран</button>
         <button type="button" class="mode-btn" id="modeBtnVictory" onclick="setPreviewMode('victory')">🏆 Окно победы</button>
       </div>
       <iframe id="previewFrame" allow="autoplay"></iframe>
-      <div class="hint">Предпросмотр обновляется автоматически при изменении полей. Переключи на «Окно победы», чтобы сразу видеть правки текста/цвета/шрифта победного экрана — без прохождения игры. Когда всё готово — нажми «Скачать готовую игру .html» в шапке: получится отдельный файл, который можно открыть в браузере или отправить кому угодно.<br><br>💡 Формулы: оберни LaTeX-код знаками доллара, например <code>$x^2+1$</code> или <code>$\frac{a}{b}$</code> — редактор покажет их как настоящие формулы. Обычный текст с любыми символами (тире, кавычки, двоеточия) отображается как есть и не ломается.</div>
+      <div class="hint">Предпросмотр обновляется автоматически при изменении полей. Переключи на «Титульный экран» или «Окно победы», чтобы сразу видеть правки текста/цвета/шрифта — без прохождения игры (титульный экран показывается тут независимо от галочки «Показывать титульный экран», чтобы его было удобно проверить). Когда всё готово — нажми «Скачать готовую игру .html» в шапке: получится отдельный файл, который можно открыть в браузере или отправить кому угодно.<br><br>💡 Формулы: оберни LaTeX-код знаками доллара, например <code>$x^2+1$</code> или <code>$\frac{a}{b}$</code> — редактор покажет их как настоящие формулы. Обычный текст с любыми символами (тире, кавычки, двоеточия) отображается как есть и не ломается.</div>
     </div>
   </div>
 </div>
@@ -732,6 +753,7 @@
 :root{
   --bg-deep:{{C_BG_DEEP}}; --bg-panel:{{C_BG_PANEL}}; --bg-panel-2:{{C_BG_PANEL2}}; --bg-cell:{{C_BG_CELL}};
   --ember:{{C_EMBER}}; --ember-dark:{{C_EMBER_DARK}}; --gold:{{C_GOLD}}; --steel:{{C_STEEL}}; --ruby:{{C_RUBY}};
+  --anvil-label-color:{{C_ANVIL_LABEL}};
   --correct:{{C_CORRECT}}; --parchment:{{C_PARCHMENT}}; --parchment-2:{{C_PARCHMENT2}}; --text:{{C_TEXT}}; --text-dim:{{C_TEXT_DIM}};
   --q-bg:{{C_Q_BG}}; --q-border:{{C_Q_BORDER}}; --q-text:{{C_Q_TEXT}}; --glow:{{C_GLOW}};
   --reset-bg:{{C_RESET_BG}}; --reset-text:{{C_RESET_TEXT}}; --answer-text:{{C_ANSWER_TEXT}}; --final-border:{{C_FINAL_BORDER}};
@@ -817,7 +839,7 @@ body{ margin:0; font-family:'Nunito Sans', sans-serif;
   transition:transform .08s ease, box-shadow .08s ease; }
 .anvil-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.35); }
 .anvil-icon-img{ width:56%; height:56%; object-fit:contain; display:block; pointer-events:none; }
-.anvil-label{ margin-top:8px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:var(--gold); letter-spacing:.04em; }
+.anvil-label{ margin-top:8px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:var(--anvil-label-color, var(--gold)); letter-spacing:.04em; }
 .spark{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold); top:50%; left:50%; pointer-events:none; animation:spark-fly .55s ease-out forwards; }
 @keyframes spark-fly{ to{ transform:translate(var(--dx),var(--dy)) scale(0); opacity:0; } }
 .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg-panel);
@@ -1535,11 +1557,21 @@ renderBoard(); renderHUD();
 initIntroScreen();
 function initIntroScreen(){
   const introOverlay = document.getElementById('introOverlay');
-  if(!SHOW_INTRO){ introOverlay.remove(); return; }
   const io = INTRO_OVERRIDES;
-  const titleBlock = document.querySelector('.title-block');
-  if(titleBlock) titleBlock.style.display = 'none'; // shown on the intro screen instead — no need for it to linger during play
-  introOverlay.style.background = io.bg || '#141019';
+  // Styling is applied regardless of SHOW_INTRO, so the editor's dedicated
+  // "Титульный экран" preview tab can force it visible for checking/editing
+  // even while the toggle itself is switched off for actual gameplay.
+  const bgOpacity = io.bgOpacity != null ? io.bgOpacity : 100;
+  const bgTint = 'color-mix(in srgb, ' + (io.bg || '#141019') + ' ' + bgOpacity + '%, transparent)';
+  if(io.bgImage && io.bgImage.trim()){
+    introOverlay.style.backgroundImage = 'linear-gradient(' + bgTint + ', ' + bgTint + '), url("' + io.bgImage.trim() + '")';
+    introOverlay.style.backgroundSize = 'cover';
+    introOverlay.style.backgroundPosition = 'center';
+    introOverlay.style.backgroundRepeat = 'no-repeat';
+  } else {
+    introOverlay.style.backgroundImage = 'none';
+    introOverlay.style.background = bgTint;
+  }
   const introTitleEl = document.getElementById('introTitle');
   introTitleEl.style.color = io.titleColor || '#f6ead8';
   introTitleEl.style.fontFamily = "'" + (io.font || 'Baloo 2') + "', 'Baloo 2', sans-serif";
@@ -1552,11 +1584,26 @@ function initIntroScreen(){
   startBtn.style.color = io.btnTextColor || '#ffffff';
   startBtn.style.fontFamily = "'" + (io.btnFont || 'Baloo 2') + "', 'Baloo 2', sans-serif";
   if(io.btnFontSize) startBtn.style.fontSize = io.btnFontSize + 'px';
-  startBtn.addEventListener('click', () => {
+  startBtn.addEventListener('click', () => { introOverlay.classList.add('hide'); });
+  if(SHOW_INTRO){
+    const titleBlock = document.querySelector('.title-block');
+    if(titleBlock) titleBlock.style.display = 'none'; // shown on the intro screen instead — no need for it to linger during play
+  } else {
     introOverlay.classList.add('hide');
-    setTimeout(() => introOverlay.remove(), 400);
-  });
+  }
 }
+// Used only by the editor's live preview, to show/hide the intro screen on demand
+// regardless of the SHOW_INTRO setting — never touched during real gameplay.
+window.showIntroPreview = function(){
+  const el = document.getElementById('introOverlay');
+  el.style.transition = 'none'; // instant for preview purposes — no fade-through-both-screens flash
+  el.classList.remove('hide');
+};
+window.hideIntroPreview = function(){
+  const el = document.getElementById('introOverlay');
+  el.style.transition = 'none';
+  el.classList.add('hide');
+};
 </script>
 </body>
 </html>
@@ -1923,6 +1970,7 @@ function applyTheme(id){
   config.subtitle = '';
   config.anvilLabel = '';
   config.anvilIcon = theme.anvilIcon;
+  config.anvilLabelColor = '';
   config.objectiveLabel = '';
   config.palette = JSON.parse(JSON.stringify(theme.palette));
   config.tiers = JSON.parse(JSON.stringify(theme.tiers));
@@ -1956,6 +2004,7 @@ function sampleConfig(){
     title: "",
     subtitle: "",
     anvilLabel: "",
+    anvilLabelColor: '',
     anvilIcon: "🔨",
     objectiveLabel: "",
     cols: 6,
@@ -1974,6 +2023,8 @@ function sampleConfig(){
     showIntro: true,
     introBtnLabelText: '',
     introBgColor: '#141019',
+    introBgOpacity: 100,
+    introBgImage: '',
     introTitleColor: '#f6ead8',
     introSubtitleColor: '#cbbfae',
     introFont: 'Baloo 2',
@@ -2212,6 +2263,29 @@ const MAX_QA_DATAURL_KB = 350; // safety cap on one picture — the modal shows 
                                 // ~170px (question) / ~80px (answer) tall, so anything heavier
                                 // than this is wasted weight in the embedded game
 
+/* ============= Intro screen background image — shown full-bleed, so it gets a bigger
+   size budget than icons, but still capped so it doesn't blow up the embed weight ============= */
+const MAX_BG_IMG_DIM = 900;
+const MAX_BG_DATAURL_KB = 500;
+async function handleIntroBgImageUpload(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  inputEl.value = '';
+  if(!file) return;
+  try{
+    const { dataUrl, width, height } = await resizeImageFile(file, MAX_BG_IMG_DIM);
+    const kb = Math.round(dataUrl.length * 0.75 / 1024);
+    if(kb > MAX_BG_DATAURL_KB){
+      showEditorToast('Картинка слишком «тяжёлая» даже после сжатия (~' + kb + ' КБ) — попробуй файл попроще.', 'error');
+      return;
+    }
+    config.introBgImage = dataUrl;
+    render();
+    showEditorToast('Картинка загружена (' + width + '×' + height + 'px, ~' + kb + ' КБ) — встроена прямо в код игры.', 'success');
+  }catch(err){
+    showEditorToast('Не удалось загрузить картинку — попробуй другой файл (PNG, JPG, GIF, SVG).', 'error');
+  }
+}
+
 function qaFieldSet(qi, kind, oi, val){
   const q = config.questions[qi];
   if(kind === 'q') q.q = val;
@@ -2282,6 +2356,7 @@ function render(){
   document.getElementById('cfgTitle').placeholder = themeLabels.title;
   document.getElementById('cfgSubtitle').placeholder = themeLabels.subtitle;
   document.getElementById('cfgAnvilLabel').value = config.anvilLabel;
+  document.getElementById('cfgAnvilLabelColor').value = config.anvilLabelColor || config.palette.gold;
   document.getElementById('cfgAnvilLabel').placeholder = themeLabels.anvil;
   document.getElementById('cfgAnvilIcon').value = config.anvilIcon;
   document.getElementById('anvilIconPreview').innerHTML = iconPreviewInnerHTML(config.anvilIcon);
@@ -2304,6 +2379,10 @@ function render(){
   document.getElementById('cfgShowIntro').checked = config.showIntro !== false;
   document.getElementById('cfgIntroBtnLabel').value = config.introBtnLabelText || '';
   document.getElementById('cfgIntroBgColor').value = config.introBgColor || '#141019';
+  document.getElementById('cfgIntroBgOpacity').value = config.introBgOpacity != null ? config.introBgOpacity : 100;
+  document.getElementById('introBgOpacityVal').textContent = document.getElementById('cfgIntroBgOpacity').value;
+  document.getElementById('cfgIntroBgImage').value = config.introBgImage || '';
+  document.getElementById('introBgImagePreview').innerHTML = config.introBgImage ? iconPreviewInnerHTML(config.introBgImage) : '';
   document.getElementById('cfgIntroTitleColor').value = config.introTitleColor || '#f6ead8';
   document.getElementById('cfgIntroSubtitleColor').value = config.introSubtitleColor || '#cbbfae';
   document.getElementById('cfgIntroFont').value = config.introFont || 'Baloo 2';
@@ -2461,6 +2540,7 @@ function syncSettings(){
   config.title = document.getElementById('cfgTitle').value;
   config.subtitle = document.getElementById('cfgSubtitle').value || '';
   config.anvilLabel = document.getElementById('cfgAnvilLabel').value;
+  config.anvilLabelColor = document.getElementById('cfgAnvilLabelColor').value;
   config.anvilIcon = document.getElementById('cfgAnvilIcon').value || '🔨';
   config.objectiveLabel = document.getElementById('cfgObjectiveLabel').value;
   config.cols = parseInt(document.getElementById('cfgCols').value) || 6;
@@ -2483,6 +2563,9 @@ function syncSettings(){
   config.showIntro = document.getElementById('cfgShowIntro').checked;
   config.introBtnLabelText = document.getElementById('cfgIntroBtnLabel').value;
   config.introBgColor = document.getElementById('cfgIntroBgColor').value || '#141019';
+  config.introBgOpacity = parseInt(document.getElementById('cfgIntroBgOpacity').value);
+  if(isNaN(config.introBgOpacity)) config.introBgOpacity = 100;
+  config.introBgImage = document.getElementById('cfgIntroBgImage').value.trim();
   config.introTitleColor = document.getElementById('cfgIntroTitleColor').value || '#f6ead8';
   config.introSubtitleColor = document.getElementById('cfgIntroSubtitleColor').value || '#cbbfae';
   config.introFont = document.getElementById('cfgIntroFont').value || 'Baloo 2';
@@ -2862,7 +2945,7 @@ function downloadCSVTemplate(){
 
 
 
-['cfgTitle','cfgSubtitle','cfgAnvilLabel','cfgAnvilIcon','cfgObjectiveLabel','cfgCols','cfgRows','cfgChance','cfgBonusChance','cfgNeighborBoostChance','cfgScoreBoostChance','cfgTarget','cfgUseLatex','cfgTransparentBg','cfgEmbedMode','cfgEmbedWidth','cfgEmbedHeight','cfgLanguage','cfgShowIntro','cfgIntroBtnLabel','cfgIntroBgColor','cfgIntroTitleColor','cfgIntroSubtitleColor','cfgIntroFont','cfgIntroFontSize','cfgIntroBtnBgColor','cfgIntroBtnTextColor','cfgIntroBtnFont','cfgIntroBtnFontSize','cfgResetLabel','cfgVictoryDone','cfgVictorySub','cfgStatLabel','cfgPlayAgain','cfgVictoryIconOverride','cfgVictoryFont','cfgVictoryFontSize','cfgVictoryIconSize','cfgVictoryTextColor','cfgVictoryBgColor','cfgVictoryFx','cfgQuestionBgColor','cfgQuestionBorderColor','cfgQuestionTextColor','cfgGlowColor','cfgResetBgColor','cfgResetTextColor','cfgAnswerTextColor','cfgFinalBorderColor','cfgPlayAgainBgColor','cfgPlayAgainTextColor','cfgPlayAgainFont','cfgPlayAgainFontSize','cfgModalEyebrow','cfgContinueBtn','cfgCorrectFeedback','cfgWrongFeedback','cfgVictoryScoreColor','cfgTitleFont','cfgTitleColor','cfgSubtitleColor','cfgBoardBgColor','cfgCellBgColor','cfgScorePillBgColor','cfgScorePillTextColor','cfgContinueBgColor','cfgContinueTextColor','cfgContinueFont','cfgContinueFontSize','cfgIconScale']
+['cfgTitle','cfgSubtitle','cfgAnvilLabel','cfgAnvilLabelColor','cfgAnvilIcon','cfgObjectiveLabel','cfgCols','cfgRows','cfgChance','cfgBonusChance','cfgNeighborBoostChance','cfgScoreBoostChance','cfgTarget','cfgUseLatex','cfgTransparentBg','cfgEmbedMode','cfgEmbedWidth','cfgEmbedHeight','cfgLanguage','cfgShowIntro','cfgIntroBtnLabel','cfgIntroBgColor','cfgIntroBgOpacity','cfgIntroBgImage','cfgIntroTitleColor','cfgIntroSubtitleColor','cfgIntroFont','cfgIntroFontSize','cfgIntroBtnBgColor','cfgIntroBtnTextColor','cfgIntroBtnFont','cfgIntroBtnFontSize','cfgResetLabel','cfgVictoryDone','cfgVictorySub','cfgStatLabel','cfgPlayAgain','cfgVictoryIconOverride','cfgVictoryFont','cfgVictoryFontSize','cfgVictoryIconSize','cfgVictoryTextColor','cfgVictoryBgColor','cfgVictoryFx','cfgQuestionBgColor','cfgQuestionBorderColor','cfgQuestionTextColor','cfgGlowColor','cfgResetBgColor','cfgResetTextColor','cfgAnswerTextColor','cfgFinalBorderColor','cfgPlayAgainBgColor','cfgPlayAgainTextColor','cfgPlayAgainFont','cfgPlayAgainFontSize','cfgModalEyebrow','cfgContinueBtn','cfgCorrectFeedback','cfgWrongFeedback','cfgVictoryScoreColor','cfgTitleFont','cfgTitleColor','cfgSubtitleColor','cfgBoardBgColor','cfgCellBgColor','cfgScorePillBgColor','cfgScorePillTextColor','cfgContinueBgColor','cfgContinueTextColor','cfgContinueFont','cfgContinueFontSize','cfgIconScale']
   .forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('input', syncSettings);
@@ -2900,6 +2983,7 @@ function buildGameHTML(cfg){
   tpl = tpl.replaceAll('{{C_EMBER}}', p.ember);
   tpl = tpl.replaceAll('{{C_EMBER_DARK}}', p.emberDark);
   tpl = tpl.replaceAll('{{C_GOLD}}', p.gold);
+  tpl = tpl.replaceAll('{{C_ANVIL_LABEL}}', cfg.anvilLabelColor || p.gold);
   tpl = tpl.replaceAll('{{C_STEEL}}', p.steel);
   tpl = tpl.replaceAll('{{C_RUBY}}', p.ruby);
   tpl = tpl.replaceAll('{{C_CORRECT}}', p.correct);
@@ -2936,6 +3020,8 @@ function buildGameHTML(cfg){
   tpl = tpl.replaceAll('{{SHOW_INTRO}}', cfg.showIntro !== false ? 'true' : 'false');
   tpl = tpl.replaceAll('{{INTRO_OVERRIDES_JSON}}', safe({
     bg: cfg.introBgColor || '#141019',
+    bgOpacity: cfg.introBgOpacity != null ? cfg.introBgOpacity : 100,
+    bgImage: cfg.introBgImage || '',
     titleColor: cfg.introTitleColor || '#f6ead8',
     subtitleColor: cfg.introSubtitleColor || '#cbbfae',
     font: cfg.introFont || 'Baloo 2',
@@ -2990,6 +3076,7 @@ let previewMode = 'board';
 function setPreviewMode(mode){
   previewMode = mode;
   document.getElementById('modeBtnBoard').classList.toggle('active', mode === 'board');
+  document.getElementById('modeBtnIntro').classList.toggle('active', mode === 'intro');
   document.getElementById('modeBtnVictory').classList.toggle('active', mode === 'victory');
   renderPreview();
 }
@@ -2998,15 +3085,29 @@ function renderPreview(){
   frame.onload = () => {
     try{
       const win = frame.contentWindow;
+      if(previewMode === 'intro' && typeof win.showIntroPreview === 'function'){
+        // Force the intro screen visible for previewing, regardless of the
+        // "Показывать титульный экран" toggle — so it's easy to check/edit
+        // without having to remember to flip that setting back afterwards.
+        win.showIntroPreview();
+        frame.style.height = '640px';
+        return;
+      }
       if(previewMode === 'victory' && typeof win.renderVictoryModal === 'function'){
         // Jump straight to the win screen so text/color/font edits show instantly,
         // without having to actually play through and merge to the final item.
+        if(typeof win.hideIntroPreview === 'function') win.hideIntroPreview();
         win.renderVictoryModal(360);
         // Fixed height here (not scrollHeight-based) — the modal is centered via
         // position:fixed, so a stable viewport keeps it perfectly still while typing
         // instead of drifting with every keystroke.
         frame.style.height = '640px';
         return;
+      }
+      if(previewMode === 'board' && typeof win.hideIntroPreview === 'function'){
+        // The "board" tab is for editing the game itself — the intro screen
+        // would otherwise pop up on every single settings change and get in the way.
+        win.hideIntroPreview();
       }
       const doc = win.document;
       // Measure the .app element itself, not document/body scrollHeight — body has
