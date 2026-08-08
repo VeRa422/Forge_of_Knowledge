@@ -448,9 +448,9 @@
       <div class="panel">
         <h2>📊 Импорт из CSV / Google Таблицы</h2>
         <div class="hint" style="margin-top:0; margin-bottom:8px;">
-          Работает со всеми 5 типами вопросов сразу. Колонки: <b>Тип</b>, <b>Вопрос</b>, затем сколько угодно колонок с ответами.
-          Для «Один вариант ответа» первый ответ — правильный. Для «Несколько вариантов ответа» отметь правильные звёздочкой <code>*</code> перед текстом.
-          Для «Вписать ответ» перечисли все принимаемые варианты. Для «Расставить по порядку» элементы можно писать и по отдельным колонкам, и все сразу в одной ячейке через <code>|</code> (например <code>1|2|3|4</code>) — как удобнее в вашей таблице.
+          Работает со всеми 5 типами вопросов сразу. Колонки: <b>Тип</b>, <b>Вопрос</b>, затем ответы — можно по отдельной колонке на каждый ответ, а можно все ответы сразу в одной ячейке через <code>|</code> (например <code>Казань|Санкт-Петербург|Самара</code>) — как удобнее в вашей таблице, работает одинаково.
+          Для «Один вариант ответа» первый ответ — правильный. Для «Несколько вариантов ответа» отметь правильные звёздочкой <code>*</code> перед текстом (перед конкретным словом, даже если оно в общей ячейке через <code>|</code>).
+          Для «Вписать ответ» перечисли все принимаемые варианты. Для «Расставить по порядку» впиши элементы по порядку.
           Для «Без ответа» колонки с ответами не нужны. Скачай шаблон, чтобы увидеть готовый пример — его удобно открыть и заполнить в Google Таблицах или Excel.
         </div>
         <div class="row" style="margin-bottom:8px;">
@@ -2780,6 +2780,13 @@ function normalizeQuestion(q){
     if(!Array.isArray(q.options) || q.options.length < 2){
       q.options = [q.options && q.options[0] || '', ''];
     }
+    // Self-heal options imported before the CSV fix — a whole "Казань|Питер|Самара"
+    // could land as ONE option string instead of three separate ones.
+    if(q.options.some(o => typeof o === 'string' && o.includes('|'))){
+      q.options = q.options.flatMap(o =>
+        typeof o === 'string' && o.includes('|') ? o.split('|').map(s=>s.trim()).filter(Boolean) : [o]
+      );
+    }
     if(typeof q.correct === 'number' && q.correct > 0 && q.correct < q.options.length){
       const correctVal = q.options[q.correct];
       q.options.splice(q.correct,1);
@@ -2791,9 +2798,24 @@ function normalizeQuestion(q){
       q.options = [{text:'',correct:true},{text:'',correct:false}];
     }
     q.options.forEach(o=>{ if(typeof o.text !== 'string') o.text=''; o.correct = !!o.correct; });
+    // Same self-heal as 'single', but each option here is {text, correct} — split
+    // a combined "Дуб|Берёза" text apart into separate options, all keeping the
+    // original option's correct/incorrect flag.
+    if(q.options.some(o => o.text.includes('|'))){
+      q.options = q.options.flatMap(o =>
+        o.text.includes('|')
+          ? o.text.split('|').map(s=>s.trim()).filter(Boolean).map(text=>({text, correct:o.correct}))
+          : [o]
+      );
+    }
     if(!q.options.some(o=>o.correct)) q.options[0].correct = true;
   } else if(q.type === 'text'){
     if(!Array.isArray(q.answers) || q.answers.length < 1) q.answers = [''];
+    if(q.answers.some(a => typeof a === 'string' && a.includes('|'))){
+      q.answers = q.answers.flatMap(a =>
+        typeof a === 'string' && a.includes('|') ? a.split('|').map(s=>s.trim()).filter(Boolean) : [a]
+      );
+    }
   } else if(q.type === 'order'){
     if(!Array.isArray(q.items)) q.items = ['',''];
     // Self-heal a question imported before the "one cell, separated by | or
@@ -3011,10 +3033,17 @@ function parseQuestionsCSV(text){
     const qText = row[1] || '';
     if(!qText) continue;
     const rest = row.slice(2).filter(c => c.length > 0);
+    // Every cell can hold either ONE answer, or several packed together with "|"
+    // (the same convention used everywhere else in this tool) — flatten either
+    // way so it doesn't matter which style a given spreadsheet uses.
+    const flatten = cells => cells.flatMap(c =>
+      c.includes('|') ? c.split('|').map(s => s.trim()).filter(Boolean) : [c]
+    );
     if(type === 'info'){
       parsed.push({ type:'info', q:qText });
     } else if(type === 'text'){
-      parsed.push({ type:'text', q:qText, answers: rest.length ? rest : [''] });
+      const flat = flatten(rest);
+      parsed.push({ type:'text', q:qText, answers: flat.length ? flat : [''] });
     } else if(type === 'order'){
       // Items can come as separate spreadsheet columns, OR all packed into one
       // cell — split further on "|" (the app-wide separator convention) and,
@@ -3029,17 +3058,19 @@ function parseQuestionsCSV(text){
       if(items.length < 2) continue;
       parsed.push({ type:'order', q:qText, items });
     } else if(type === 'multi'){
-      if(rest.length < 2) continue;
-      const options = rest.map(c => {
+      const flat = flatten(rest);
+      if(flat.length < 2) continue;
+      const options = flat.map(c => {
         const correct = c.startsWith('*');
         return { text: correct ? c.slice(1).trim() : c, correct };
       });
       if(!options.some(o => o.correct)) options[0].correct = true;
       parsed.push({ type:'multi', q:qText, options });
     } else {
-      if(rest.length < 2) continue;
-      const correctIdx = rest.findIndex(c => c.startsWith('*'));
-      const clean = rest.map(c => c.startsWith('*') ? c.slice(1).trim() : c);
+      const flat = flatten(rest);
+      if(flat.length < 2) continue;
+      const correctIdx = flat.findIndex(c => c.startsWith('*'));
+      const clean = flat.map(c => c.startsWith('*') ? c.slice(1).trim() : c);
       if(correctIdx > 0){ const [c] = clean.splice(correctIdx,1); clean.unshift(c); }
       parsed.push({ type:'single', q:qText, options:clean, correct:0 });
     }
