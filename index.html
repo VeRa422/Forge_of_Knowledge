@@ -305,7 +305,6 @@
 <header>
   <div class="header-title">
     <h1>🛠️ Конструктор «Кузница Знаний»</h1>
-    <div class="note">Работа не сохраняется автоматически — скачай проект.</div>
   </div>
   <div class="toolbar">
     <button onclick="resetToSample()">↺ Сбросить</button>
@@ -2250,7 +2249,7 @@ function showEditorConfirm(message, onConfirm, opts){
   };
   overlay.classList.add('show');
   document.getElementById('edConfirmOkBtn').addEventListener('click', () => { cleanup(); onConfirm(); });
-  document.getElementById('edConfirmCancelBtn').addEventListener('click', cleanup);
+  document.getElementById('edConfirmCancelBtn').addEventListener('click', () => { cleanup(); if(opts.onCancel) opts.onCancel(); });
 }
 
 function isImageUrl(str){
@@ -2655,6 +2654,7 @@ function render(){
   });
 
   renderPreview();
+  scheduleAutosave();
 }
 function growQuestionTextarea(el){
   el.style.height = 'auto';
@@ -2748,6 +2748,7 @@ function syncSettings(){
   document.getElementById('cfgObjectiveLabel').placeholder = themeLabels.objective;
   applyUiTextPlaceholders(config.language);
   renderPreview();
+  scheduleAutosave();
 }
 
 function updateTier(i,field,val){ config.tiers[i][field]=val; renderPreview(); }
@@ -3415,9 +3416,63 @@ function downloadGame(){
 function resetToSample(){
   showEditorConfirm('Сбросить все изменения и вернуться к исходным настройкам?', () => {
     config = sampleConfig();
+    clearAutosave(); // an intentional reset also clears the safety-net copy —
+                      // otherwise it would just come back on the next reload
     render();
     showEditorToast('Настройки сброшены к исходным.', 'info');
   }, { title:'Сбросить всё?', okLabel:'Сбросить' });
+}
+
+/* ============= Autosave to localStorage — a safety net for power outages, browser
+   crashes, or an accidental tab close before remembering to click "Скачать проект".
+   This is NOT a replacement for that button: it only survives in THIS browser, on
+   THIS computer, and only until the person explicitly resets. Debounced so typing
+   doesn't hammer localStorage on every keystroke.
+   Unreliable when the constructor itself sits inside someone else's iframe (e.g.
+   embedded in a Genially page) — many browsers block or isolate storage for embedded
+   third-party content, so this is detected up front and the header note (and whether
+   autosave/restore even runs at all) adjusts honestly instead of promising something
+   that may silently not work. ============= */
+const AUTOSAVE_KEY = 'kuznicaZnaniy_autosave_v1';
+const IS_EMBEDDED_FRAME = (function(){
+  try{ return window.self !== window.top; }catch(e){ return true; } // a cross-origin throw also means "embedded"
+})();
+const AUTOSAVE_STORAGE_OK = (function(){
+  if(IS_EMBEDDED_FRAME) return false; // don't even try — see note above
+  try{
+    const testKey = '__kz_storage_test__';
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+    return true;
+  }catch(e){ return false; }
+})();
+let autosaveTimer = null;
+function scheduleAutosave(){
+  if(!AUTOSAVE_STORAGE_OK) return;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    try{
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ savedAt: Date.now(), config }));
+    }catch(e){
+      // Storage full (large embedded images) or unavailable (private browsing) —
+      // fail silently; this is a bonus safety net, not the primary save path.
+    }
+  }, 800);
+}
+function clearAutosave(){
+  try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){}
+}
+function checkForAutosave(){
+  if(!AUTOSAVE_STORAGE_OK) return;
+  let saved;
+  try{ saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null'); }catch(e){ saved = null; }
+  if(!saved || !saved.config) return;
+  const when = saved.savedAt ? new Date(saved.savedAt).toLocaleString('ru-RU') : 'неизвестно когда';
+  showEditorConfirm(
+    'Найдена несохранённая работа с прошлого раза (' + when + ') — например, после отключения света или закрытия вкладки без сохранения. Восстановить её?',
+    () => { config = Object.assign(sampleConfig(), saved.config); render(); showEditorToast('Черновик восстановлен.', 'success'); },
+    { title:'Восстановить черновик?', okLabel:'Восстановить', cancelLabel:'Начать заново', onCancel: clearAutosave }
+  );
 }
 
 /* ============= Genially embed code ============= */
@@ -3494,6 +3549,7 @@ async function copyGeniallyCode(){
 }
 
 render();
+checkForAutosave();
 </script>
 </body>
 </html>
