@@ -109,7 +109,7 @@
   .preview-hint-details summary::-webkit-details-marker{ display:none; }
   .preview-hint-details[open] summary{ color:var(--text); margin-bottom:4px; }
   .preview-hint-details .hint{ max-height:120px; overflow-y:auto; }
-  label{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--dim); font-weight:700; display:block; margin-bottom:4px; }
+  label{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--dim); font-weight:700; display:block; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   input[type=text], input[type=number], textarea{
     width:100%; padding:9px 10px; border-radius:7px; border:1px solid var(--border);
     background:#181820; color:var(--text); font-family:inherit; font-size:13px;
@@ -151,16 +151,17 @@
      top-to-bottom, right column is the answers, sized independently so a short
      question doesn't leave a big awkward gap under a tall answers list. */
   .q-table-header{
-    display:grid; grid-template-columns:1fr 1.3fr; gap:10px;
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:10px;
     padding:0 2px 6px; font-size:10px; font-weight:800; text-transform:uppercase;
     letter-spacing:.04em; color:var(--dim);
   }
   .q-row{
-    display:grid; grid-template-columns:1fr 1.3fr; gap:10px;
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:10px;
     align-items:start; background:var(--panel-2); border-left:3px solid var(--accent);
     border-radius:8px; padding:8px; margin-bottom:8px;
   }
-  .q-row-left{ display:flex; flex-direction:column; gap:6px; }
+  .q-row-left{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .q-row-body{ min-width:0; }
   .q-row-head{ display:flex; align-items:center; gap:6px; }
   .q-row-head .q-index{ flex:0 0 auto; font-size:11px; font-weight:800; color:var(--dim); }
   .q-row-head .q-type-select{ flex:1 1 auto; min-width:0; }
@@ -170,7 +171,7 @@
     border:1px solid var(--border); background:#181820; color:var(--accent-2); font-weight:700; cursor:pointer;
   }
   .q-row-question .q-compact-input{ font-weight:700; }
-  .q-field-label{ font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--dim); margin:0 0 4px; }
+  .q-field-label{ font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--dim); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .q-row-body .q-field-label:not(:first-child){ margin-top:6px; }
   .q-compact-input{
     width:100%; padding:7px 8px; font-size:12px; border-radius:6px;
@@ -339,15 +340,15 @@
           <div class="field"><label>Строк поля</label><input type="number" id="cfgRows" min="3" max="8"></div>
         </div>
         <div class="row">
-          <div class="field"><label>Шанс, что новый предмет будет отмечен вопросом (0–1)</label><input type="number" id="cfgChance" step="0.1" min="0" max="1"></div>
-          <div class="field"><label>Цель — сколько предметов верхнего уровня собрать</label><input type="number" id="cfgTarget" min="1"></div>
+          <div class="field"><label title="Шанс, что новый предмет будет отмечен вопросом (0–1)">Шанс метки (0–1)</label><input type="number" id="cfgChance" step="0.1" min="0" max="1"></div>
+          <div class="field"><label title="Цель — сколько предметов верхнего уровня собрать">Цель (кол-во)</label><input type="number" id="cfgTarget" min="1"></div>
         </div>
         <div class="row">
-          <div class="field"><label>Шанс бонусного предмета (сразу на уровень выше) при ковке (0–1)</label><input type="number" id="cfgBonusChance" step="0.05" min="0" max="1"></div>
+          <div class="field"><label title="Шанс бонусного предмета (сразу на уровень выше) при ковке (0–1)">Шанс бонуса (0–1)</label><input type="number" id="cfgBonusChance" step="0.05" min="0" max="1"></div>
         </div>
         <div class="row">
-          <div class="field"><label>Шанс мгновенного повышения соседних предметов при ковке (0–1)</label><input type="number" id="cfgNeighborBoostChance" step="0.05" min="0" max="1"></div>
-          <div class="field"><label>Шанс временного удвоения очков при ковке (0–1)</label><input type="number" id="cfgScoreBoostChance" step="0.05" min="0" max="1"></div>
+          <div class="field"><label title="Шанс мгновенного повышения соседних предметов при ковке (0–1)">Шанс буста соседей (0–1)</label><input type="number" id="cfgNeighborBoostChance" step="0.05" min="0" max="1"></div>
+          <div class="field"><label title="Шанс временного удвоения очков при ковке (0–1)">Шанс x2 очков (0–1)</label><input type="number" id="cfgScoreBoostChance" step="0.05" min="0" max="1"></div>
         </div>
         <div class="row">
           <div class="field">
@@ -387,7 +388,7 @@
         </div>
         <div class="row">
           <div class="field" style="flex:2;">
-            <label>Формат кода для Genially</label>
+            <label title="Формат кода для Genially">Формат кода</label>
             <select id="cfgEmbedMode">
               <option value="srcdoc" selected>srcdoc — для Genially (рекомендуется)</option>
               <option value="data">Data-URI — запасной вариант (другие сайты)</option>
@@ -404,30 +405,38 @@
       <div class="panel">
         <h2>⚡ Быстрый ввод вопросов списком</h2>
         <div class="hint" style="margin-top:0; margin-bottom:8px;">
-          Три колонки, строки соответствуют друг другу по номеру: вопрос №1 слева — это ответы №1 в двух других колонках, и так далее.
-          В каждой колонке с ответами можно указать несколько вариантов через <code>|</code>; регистр не важен.
-          Если колонку «Неправильные» для строки не заполнять — получится вопрос «Вписать ответ» (текстовое поле).
-          Если заполнить и указать один правильный вариант — получится «Один вариант ответа» (кнопки), если несколько правильных — «Несколько вариантов ответа» (галочки).
-          Для типов «Расставить по порядку» и «Без ответа» — используй импорт из CSV ниже или карточки в банке вопросов.
+          Строки соответствуют друг другу по номеру: вопрос №1 слева — это ответы №1 в остальных колонках, и так далее.
+          В колонках с ответами можно указать несколько вариантов через <code>|</code>; регистр не важен.
+          Колонку «Тип» заполнять не обязательно — без неё тип определяется автоматически: если колонку «Неправильные» не заполнять — получится «Вписать ответ», один правильный вариант — «Один вариант ответа», несколько правильных — «Несколько вариантов ответа».
+          Для типов «Расставить по порядку» и «Без ответа» колонку «Тип» заполнить нужно обязательно (словом «порядок» или «без ответа») — тогда колонка «Правильные» читается как элементы по порядку (через <code>|</code> или пробел), а «Неправильные» игнорируется.
+        </div>
+        <div class="hint" style="margin-top:0; margin-bottom:8px; background:#20202b; border:1px dashed var(--border); border-radius:8px; padding:10px 12px;">
+          <b>Пример строки для «Расставить по порядку»</b> (этот же формат подходит и для Google Таблиц/CSV ниже):<br>
+          Вопрос: <code>Расставь числа по возрастанию</code> &nbsp; Тип: <code>порядок</code> &nbsp; Правильные: <code>1|2|3|4</code> &nbsp; Неправильные: <i>оставь пустым</i>
         </div>
         <div class="row" style="margin-bottom:0;">
-          <div style="flex:1;">
+          <div style="flex:0.7;">
+            <div class="q-field-label">Тип</div>
+            <textarea id="bulkTypeCol" rows="9" placeholder="
+
+порядок"></textarea>
+          </div>
+          <div style="flex:1.3;">
             <div class="q-field-label">Вопросы</div>
             <textarea id="bulkQuestionsCol" rows="9" placeholder="Сколько будет 7 × 8?
 Столица Франции?
-Какие из этих деревьев хвойные?"></textarea>
+Расположи числа от меньшего к большему"></textarea>
           </div>
           <div style="flex:1;">
-            <div class="q-field-label">Правильные (через |)</div>
+            <div class="q-field-label">Правильные</div>
             <textarea id="bulkCorrectCol" rows="9" placeholder="56
 Париж
-Сосна|Ель"></textarea>
+1|2|3|4"></textarea>
           </div>
           <div style="flex:1;">
-            <div class="q-field-label">Неправильные (через |, необязательно)</div>
+            <div class="q-field-label">Неправильные</div>
             <textarea id="bulkWrongCol" rows="9" placeholder="54|64|58
-
-Дуб|Берёза"></textarea>
+"></textarea>
           </div>
         </div>
         <div class="row" style="margin-top:10px; margin-bottom:0;">
@@ -442,8 +451,8 @@
         <div class="hint" style="margin-top:0; margin-bottom:8px;">
           Работает со всеми 5 типами вопросов сразу. Колонки: <b>Тип</b>, <b>Вопрос</b>, затем сколько угодно колонок с ответами.
           Для «Один вариант ответа» первый ответ — правильный. Для «Несколько вариантов ответа» отметь правильные звёздочкой <code>*</code> перед текстом.
-          Для «Вписать ответ» перечисли все принимаемые варианты. Для «Расставить по порядку» впиши элементы в правильном порядке слева направо.
-          Для «Без ответа» колонки с ответами не нужны. Скачай шаблон, чтобы увидеть пример — его удобно открыть и заполнить в Google Таблицах или Excel.
+          Для «Вписать ответ» перечисли все принимаемые варианты. Для «Расставить по порядку» элементы можно писать и по отдельным колонкам, и все сразу в одной ячейке через <code>|</code> (например <code>1|2|3|4</code>) — как удобнее в вашей таблице.
+          Для «Без ответа» колонки с ответами не нужны. Скачай шаблон, чтобы увидеть готовый пример — его удобно открыть и заполнить в Google Таблицах или Excel.
         </div>
         <div class="row" style="margin-bottom:8px;">
           <button class="small" onclick="document.getElementById('csvFileInput').click()">📁 Загрузить CSV-файл</button>
@@ -481,7 +490,7 @@
         </div>
         <div class="row">
           <div class="field">
-            <label>Подпись на кнопке-молоте</label>
+            <label title="Подпись на кнопке-молоте">Подпись кнопки</label>
             <input type="text" id="cfgAnvilLabel">
           </div>
           <div class="field" style="flex:0 0 90px;">
@@ -489,7 +498,7 @@
             <input type="color" id="cfgAnvilLabelColor">
           </div>
           <div class="field">
-            <label>Иконка на кнопке (эмодзи или картинка)</label>
+            <label title="Эмодзи или картинка">Иконка кнопки</label>
             <div class="field-icon-upload-row">
               <div class="icon-preview-wrap" style="flex:0 0 auto;">
                 <div class="icon-preview" id="anvilIconPreview"></div>
@@ -535,7 +544,7 @@
         </div>
         <div class="row">
           <div class="field" style="flex:2;">
-            <label>Иконка окна победы (по умолчанию — финальный предмет из цепочки)</label>
+            <label title="По умолчанию — финальный предмет из цепочки">Иконка победы</label>
             <div class="field-icon-upload-row">
               <div class="icon-preview-wrap" style="flex:0 0 auto;">
                 <div class="icon-preview" id="victoryIconPreview"></div>
@@ -675,7 +684,7 @@
         </div>
         <div class="row">
           <div class="field" style="flex:2;">
-            <label>Фоновая картинка (необязательно — цвет и прозрачность выше становятся полупрозрачной «плёнкой» поверх неё)</label>
+            <label title="Необязательно — цвет и прозрачность выше становятся полупрозрачной «плёнкой» поверх неё">Фоновая картинка</label>
             <div class="field-icon-upload-row">
               <div class="icon-preview-wrap" style="flex:0 0 auto;">
                 <div class="icon-preview" id="introBgImagePreview"></div>
@@ -2785,7 +2794,18 @@ function normalizeQuestion(q){
   } else if(q.type === 'text'){
     if(!Array.isArray(q.answers) || q.answers.length < 1) q.answers = [''];
   } else if(q.type === 'order'){
-    if(!Array.isArray(q.items) || q.items.length < 2) q.items = ['',''];
+    if(!Array.isArray(q.items)) q.items = ['',''];
+    // Self-heal a question imported before the "one cell, separated by | or
+    // spaces" fix — back then it landed as a single item containing the whole
+    // "1|2|3|4" string instead of four separate items, so it plays as a single
+    // un-sortable tile. Split it apart the same way import does now.
+    if(q.items.length === 1 && typeof q.items[0] === 'string' &&
+       (q.items[0].includes('|') || /\s/.test(q.items[0].trim()))){
+      const raw = q.items[0];
+      q.items = (raw.includes('|') ? raw.split('|') : raw.split(/\s+/))
+        .map(s=>s.trim()).filter(Boolean);
+    }
+    if(q.items.length < 2) q.items = ['',''];
   }
   return q;
 }
@@ -2847,14 +2867,31 @@ function moveOrderItem(qi,oi,dir){
 /* ============= Quick two-column import (Вопросы | Ответы) — matches lines by index,
    always creates 'text' type questions (type-in answer, no distractors). Question types
    with a "Расставить по порядку" or "Без ответа" type are covered by the CSV import below or the row editor above. ============= */
-function parseColumnQuestions(questionsText, correctText, wrongText){
+function parseColumnQuestions(questionsText, correctText, wrongText, typeText){
   const qLines = questionsText.split('\n').map(l=>l.trim());
   const cLines = correctText.split('\n').map(l=>l.trim());
   const wLines = wrongText.split('\n').map(l=>l.trim());
+  const tLines = (typeText || '').split('\n').map(l=>l.trim().toLowerCase());
   const parsed = [];
   for(let i=0; i<qLines.length; i++){
     const q = qLines[i];
     if(!q) continue;
+    const explicitType = tLines[i] || '';
+    if(explicitType.includes('без') || explicitType.includes('info')){
+      parsed.push({ type:'info', q });
+      continue;
+    }
+    if(explicitType.includes('порядок') || explicitType.includes('order')){
+      // Items packed into one cell — split on "|" first, falling back to plain
+      // whitespace so a simple "1 2 3 4" cell works without needing "|" at all.
+      const raw = cLines[i] || '';
+      const items = raw.includes('|')
+        ? raw.split('|').map(s=>s.trim()).filter(Boolean)
+        : raw.split(/\s+/).map(s=>s.trim()).filter(Boolean);
+      if(items.length < 2) continue;
+      parsed.push({ type:'order', q, items });
+      continue;
+    }
     const correct = (cLines[i] || '').split('|').map(s=>s.trim()).filter(Boolean);
     const wrong = (wLines[i] || '').split('|').map(s=>s.trim()).filter(Boolean);
     if(correct.length === 0) continue;
@@ -2877,7 +2914,8 @@ function importColumnQuestions(append){
   const qText = document.getElementById('bulkQuestionsCol').value;
   const cText = document.getElementById('bulkCorrectCol').value;
   const wText = document.getElementById('bulkWrongCol').value;
-  const parsed = parseColumnQuestions(qText, cText, wText);
+  const tText = document.getElementById('bulkTypeCol').value;
+  const parsed = parseColumnQuestions(qText, cText, wText, tText);
   if(parsed.length === 0){
     showEditorToast('Не удалось распознать ни одной пары «вопрос — ответ». Проверь, что для каждого вопроса заполнена соответствующая строка в колонке «Правильные».', 'error');
     return;
@@ -2901,22 +2939,25 @@ function importColumnQuestions(append){
   }
 }
 function exportColumnQuestions(){
-  const supported = config.questions.filter(q => q.type==='text' || q.type==='single' || q.type==='multi');
-  const skipped = config.questions.length - supported.length;
+  const supported = config.questions;
   document.getElementById('bulkQuestionsCol').value = supported.map(q => q.q).join('\n');
+  document.getElementById('bulkTypeCol').value = supported.map(q => {
+    if(q.type === 'order') return 'порядок';
+    if(q.type === 'info') return 'без ответа';
+    return '';
+  }).join('\n');
   document.getElementById('bulkCorrectCol').value = supported.map(q => {
     if(q.type === 'text') return (q.answers||[]).join('|');
     if(q.type === 'single') return q.options[0] || '';
+    if(q.type === 'order') return (q.items||[]).join('|');
+    if(q.type === 'info') return '';
     return q.options.filter(o=>o.correct).map(o=>o.text).join('|');
   }).join('\n');
   document.getElementById('bulkWrongCol').value = supported.map(q => {
-    if(q.type === 'text') return '';
+    if(q.type === 'text' || q.type === 'order' || q.type === 'info') return '';
     if(q.type === 'single') return q.options.slice(1).join('|');
     return q.options.filter(o=>!o.correct).map(o=>o.text).join('|');
   }).join('\n');
-  if(skipped > 0){
-    showEditorToast('Сюда выгружены только вопросы типов «Вписать ответ», «Один вариант» и «Несколько вариантов». Пропущено других типов: ' + skipped + '.', 'info');
-  }
 }
 
 /* ============= CSV / Google Sheets import — supports all 5 question types via
@@ -2974,8 +3015,18 @@ function parseQuestionsCSV(text){
     } else if(type === 'text'){
       parsed.push({ type:'text', q:qText, answers: rest.length ? rest : [''] });
     } else if(type === 'order'){
-      if(rest.length < 2) continue;
-      parsed.push({ type:'order', q:qText, items: rest });
+      // Items can come as separate spreadsheet columns, OR all packed into one
+      // cell — split further on "|" (the app-wide separator convention) and,
+      // if that finds nothing, fall back to splitting on whitespace so a plain
+      // "1 2 3 4" cell works too. Every cell is split the same way, then flattened.
+      const items = rest.flatMap(c => {
+        if(c.includes('|')) return c.split('|').map(s => s.trim()).filter(Boolean);
+        if(c.includes(',')) return c.split(',').map(s => s.trim()).filter(Boolean);
+        if(/\s/.test(c)) return c.split(/\s+/).map(s => s.trim()).filter(Boolean);
+        return [c];
+      });
+      if(items.length < 2) continue;
+      parsed.push({ type:'order', q:qText, items });
     } else if(type === 'multi'){
       if(rest.length < 2) continue;
       const options = rest.map(c => {
