@@ -507,6 +507,10 @@
               <input type="file" accept="image/*" id="anvilIconFile" style="display:none" onchange="handleAnvilIconUpload(this)">
             </div>
           </div>
+          <div class="field" style="flex:0 0 130px;">
+            <label title="Размер картинки внутри круглой кнопки, в процентах от кнопки">Размер иконки (%)</label>
+            <input type="number" id="cfgAnvilIconSize" value="56" min="20" max="100" step="2">
+          </div>
           <div class="field">
             <label>Подпись цели</label>
             <input type="text" id="cfgObjectiveLabel">
@@ -923,7 +927,7 @@ body{ margin:0; font-family:'Nunito Sans', sans-serif;
   box-shadow:0 6px 0 rgba(0,0,0,0.45), 0 10px 22px rgba(0,0,0,0.35); font-size:36px; display:flex; align-items:center; justify-content:center; position:relative;
   transition:transform .08s ease, box-shadow .08s ease; }
 .anvil-btn:active{ transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.35); }
-.anvil-icon-img{ width:56%; height:56%; object-fit:contain; display:block; pointer-events:none; }
+.anvil-icon-img{ width:{{ANVIL_ICON_SIZE}}%; height:{{ANVIL_ICON_SIZE}}%; object-fit:contain; display:block; pointer-events:none; }
 .anvil-label{ margin-top:8px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:var(--anvil-label-color, var(--gold)); letter-spacing:.04em; }
 .spark{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold); top:50%; left:50%; pointer-events:none; animation:spark-fly .55s ease-out forwards; }
 @keyframes spark-fly{ to{ transform:translate(var(--dx),var(--dy)) scale(0); opacity:0; } }
@@ -2115,6 +2119,7 @@ function sampleConfig(){
     subtitle: "",
     anvilLabel: "",
     anvilLabelColor: '',
+    anvilIconSize: 56,
     anvilIcon: "🔨",
     objectiveLabel: "",
     cols: 6,
@@ -2471,6 +2476,7 @@ function render(){
   document.getElementById('cfgSubtitle').placeholder = themeLabels.subtitle;
   document.getElementById('cfgAnvilLabel').value = config.anvilLabel;
   document.getElementById('cfgAnvilLabelColor').value = config.anvilLabelColor || config.palette.gold;
+  document.getElementById('cfgAnvilIconSize').value = config.anvilIconSize || 56;
   document.getElementById('cfgAnvilLabel').placeholder = themeLabels.anvil;
   document.getElementById('cfgAnvilIcon').value = config.anvilIcon;
   document.getElementById('anvilIconPreview').innerHTML = iconPreviewInnerHTML(config.anvilIcon);
@@ -2667,6 +2673,7 @@ function syncSettings(){
   config.subtitle = document.getElementById('cfgSubtitle').value || '';
   config.anvilLabel = document.getElementById('cfgAnvilLabel').value;
   config.anvilLabelColor = document.getElementById('cfgAnvilLabelColor').value;
+  config.anvilIconSize = parseInt(document.getElementById('cfgAnvilIconSize').value) || 56;
   config.anvilIcon = document.getElementById('cfgAnvilIcon').value || '🔨';
   config.objectiveLabel = document.getElementById('cfgObjectiveLabel').value;
   config.cols = parseInt(document.getElementById('cfgCols').value) || 6;
@@ -2890,6 +2897,38 @@ function moveOrderItem(qi,oi,dir){
 /* ============= Quick two-column import (Вопросы | Ответы) — matches lines by index,
    always creates 'text' type questions (type-in answer, no distractors). Question types
    with a "Расставить по порядку" or "Без ответа" type are covered by the CSV import below or the row editor above. ============= */
+// Shared by both "Быстрый ввод списком" and the CSV "правильный/неправильный ответ"
+// format below — builds one question from an explicit type (may be blank, meaning
+// auto-detect) plus a correct-answers cell and a wrong-answers cell (each possibly
+// holding several values separated by "|"). Returns null to mean "skip this row".
+function buildQuestionFromParts(q, explicitType, correctRaw, wrongRaw){
+  const type = (explicitType || '').toLowerCase();
+  if(type.includes('без') || type.includes('info')) return { type:'info', q };
+  if(type.includes('порядк') || type.includes('order')){
+    // Items packed into one cell — split on "|" first, falling back to plain
+    // whitespace so a simple "1 2 3 4" cell works without needing "|" at all.
+    const raw = correctRaw || '';
+    const items = raw.includes('|')
+      ? raw.split('|').map(s=>s.trim()).filter(Boolean)
+      : raw.split(/\s+/).map(s=>s.trim()).filter(Boolean);
+    return items.length >= 2 ? { type:'order', q, items } : null;
+  }
+  const correct = (correctRaw || '').split('|').map(s=>s.trim()).filter(Boolean);
+  const wrong = (wrongRaw || '').split('|').map(s=>s.trim()).filter(Boolean);
+  if(correct.length === 0) return null;
+  if(wrong.length === 0){
+    // No wrong answers given for this row → a type-in text question.
+    return { type:'text', q, answers: correct };
+  } else if(correct.length === 1){
+    // Exactly one correct answer plus some wrong ones → single-choice buttons.
+    return { type:'single', q, options: [correct[0], ...wrong], correct:0 };
+  } else {
+    // Several correct answers → multi-select checkboxes.
+    const options = correct.map(text => ({ text, correct:true }))
+      .concat(wrong.map(text => ({ text, correct:false })));
+    return { type:'multi', q, options };
+  }
+}
 function parseColumnQuestions(questionsText, correctText, wrongText, typeText){
   const qLines = questionsText.split('\n').map(l=>l.trim());
   const cLines = correctText.split('\n').map(l=>l.trim());
@@ -2899,37 +2938,8 @@ function parseColumnQuestions(questionsText, correctText, wrongText, typeText){
   for(let i=0; i<qLines.length; i++){
     const q = qLines[i];
     if(!q) continue;
-    const explicitType = tLines[i] || '';
-    if(explicitType.includes('без') || explicitType.includes('info')){
-      parsed.push({ type:'info', q });
-      continue;
-    }
-    if(explicitType.includes('порядок') || explicitType.includes('order')){
-      // Items packed into one cell — split on "|" first, falling back to plain
-      // whitespace so a simple "1 2 3 4" cell works without needing "|" at all.
-      const raw = cLines[i] || '';
-      const items = raw.includes('|')
-        ? raw.split('|').map(s=>s.trim()).filter(Boolean)
-        : raw.split(/\s+/).map(s=>s.trim()).filter(Boolean);
-      if(items.length < 2) continue;
-      parsed.push({ type:'order', q, items });
-      continue;
-    }
-    const correct = (cLines[i] || '').split('|').map(s=>s.trim()).filter(Boolean);
-    const wrong = (wLines[i] || '').split('|').map(s=>s.trim()).filter(Boolean);
-    if(correct.length === 0) continue;
-    if(wrong.length === 0){
-      // No wrong answers given for this row → a type-in text question.
-      parsed.push({ type:'text', q, answers: correct });
-    } else if(correct.length === 1){
-      // Exactly one correct answer plus some wrong ones → single-choice buttons.
-      parsed.push({ type:'single', q, options: [correct[0], ...wrong], correct:0 });
-    } else {
-      // Several correct answers → multi-select checkboxes.
-      const options = correct.map(text => ({ text, correct:true }))
-        .concat(wrong.map(text => ({ text, correct:false })));
-      parsed.push({ type:'multi', q, options });
-    }
+    const built = buildQuestionFromParts(q, tLines[i] || '', cLines[i] || '', wLines[i] || '');
+    if(built) parsed.push(built);
   }
   return parsed;
 }
@@ -3024,14 +3034,29 @@ function parseQuestionsCSV(text){
   let start = 0;
   const c0 = (rows[0][0] || '').toLowerCase();
   const c1 = (rows[0][1] || '').toLowerCase();
-  if(['тип','type','№','#',''].includes(c0) && ['вопрос','question'].includes(c1)) start = 1;
+  const c2 = (rows[0][2] || '').toLowerCase();
+  const c3 = (rows[0][3] || '').toLowerCase();
+  const looksLikeHeader = ['тип','type','№','#',''].includes(c0) && ['вопрос','question'].includes(c1);
+  if(looksLikeHeader) start = 1;
+  // Two header styles are supported: the classic "Тип, Вопрос, Ответ 1, Ответ 2, ..."
+  // (correct ones marked with a leading "*"), or — like the same wording used in
+  // "Быстрый ввод списком" — a dedicated "Правильный ответ" + "Неправильный ответ"
+  // column pair, each cell holding one or several values separated by "|". Detected
+  // from the header text so both styles work without the person picking one by hand.
+  const isCorrectWrongFormat = looksLikeHeader &&
+    /прав(?!.*неправ)|correct/.test(c2) && /неправ|wrong|incorrect/.test(c3);
   const parsed = [];
   for(let r = start; r < rows.length; r++){
     const row = rows[r];
     if(row.length < 2) continue;
-    const type = typeFromCSVCell(row[0]);
     const qText = row[1] || '';
     if(!qText) continue;
+    if(isCorrectWrongFormat){
+      const built = buildQuestionFromParts(qText, row[0] || '', row[2] || '', row[3] || '');
+      if(built) parsed.push(built);
+      continue;
+    }
+    const type = typeFromCSVCell(row[0]);
     const rest = row.slice(2).filter(c => c.length > 0);
     // Every cell can hold either ONE answer, or several packed together with "|"
     // (the same convention used everywhere else in this tool) — flatten either
@@ -3145,7 +3170,7 @@ function downloadCSVTemplate(){
 
 
 
-['cfgTitle','cfgSubtitle','cfgAnvilLabel','cfgAnvilLabelColor','cfgAnvilIcon','cfgObjectiveLabel','cfgCols','cfgRows','cfgChance','cfgBonusChance','cfgNeighborBoostChance','cfgScoreBoostChance','cfgTarget','cfgUseLatex','cfgTransparentBg','cfgEmbedMode','cfgEmbedWidth','cfgEmbedHeight','cfgLanguage','cfgShowIntro','cfgIntroBtnLabel','cfgIntroBgColor','cfgIntroBgOpacity','cfgIntroBgImage','cfgIntroTitleColor','cfgIntroSubtitleColor','cfgIntroFont','cfgIntroFontSize','cfgIntroBtnBgColor','cfgIntroBtnTextColor','cfgIntroBtnFont','cfgIntroBtnFontSize','cfgResetLabel','cfgVictoryDone','cfgVictorySub','cfgStatLabel','cfgPlayAgain','cfgVictoryIconOverride','cfgVictoryFont','cfgVictoryFontSize','cfgVictoryIconSize','cfgVictoryTextColor','cfgVictoryBgColor','cfgVictoryFx','cfgQuestionBgColor','cfgQuestionBorderColor','cfgQuestionTextColor','cfgGlowColor','cfgResetBgColor','cfgResetTextColor','cfgAnswerTextColor','cfgFinalBorderColor','cfgPlayAgainBgColor','cfgPlayAgainTextColor','cfgPlayAgainFont','cfgPlayAgainFontSize','cfgModalEyebrow','cfgContinueBtn','cfgCorrectFeedback','cfgWrongFeedback','cfgVictoryScoreColor','cfgTitleFont','cfgTitleColor','cfgSubtitleColor','cfgBoardBgColor','cfgCellBgColor','cfgScorePillBgColor','cfgScorePillTextColor','cfgContinueBgColor','cfgContinueTextColor','cfgContinueFont','cfgContinueFontSize','cfgIconScale']
+['cfgTitle','cfgSubtitle','cfgAnvilLabel','cfgAnvilLabelColor','cfgAnvilIcon','cfgAnvilIconSize','cfgObjectiveLabel','cfgCols','cfgRows','cfgChance','cfgBonusChance','cfgNeighborBoostChance','cfgScoreBoostChance','cfgTarget','cfgUseLatex','cfgTransparentBg','cfgEmbedMode','cfgEmbedWidth','cfgEmbedHeight','cfgLanguage','cfgShowIntro','cfgIntroBtnLabel','cfgIntroBgColor','cfgIntroBgOpacity','cfgIntroBgImage','cfgIntroTitleColor','cfgIntroSubtitleColor','cfgIntroFont','cfgIntroFontSize','cfgIntroBtnBgColor','cfgIntroBtnTextColor','cfgIntroBtnFont','cfgIntroBtnFontSize','cfgResetLabel','cfgVictoryDone','cfgVictorySub','cfgStatLabel','cfgPlayAgain','cfgVictoryIconOverride','cfgVictoryFont','cfgVictoryFontSize','cfgVictoryIconSize','cfgVictoryTextColor','cfgVictoryBgColor','cfgVictoryFx','cfgQuestionBgColor','cfgQuestionBorderColor','cfgQuestionTextColor','cfgGlowColor','cfgResetBgColor','cfgResetTextColor','cfgAnswerTextColor','cfgFinalBorderColor','cfgPlayAgainBgColor','cfgPlayAgainTextColor','cfgPlayAgainFont','cfgPlayAgainFontSize','cfgModalEyebrow','cfgContinueBtn','cfgCorrectFeedback','cfgWrongFeedback','cfgVictoryScoreColor','cfgTitleFont','cfgTitleColor','cfgSubtitleColor','cfgBoardBgColor','cfgCellBgColor','cfgScorePillBgColor','cfgScorePillTextColor','cfgContinueBgColor','cfgContinueTextColor','cfgContinueFont','cfgContinueFontSize','cfgIconScale']
   .forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener('input', syncSettings);
@@ -3160,6 +3185,7 @@ function buildGameHTML(cfg, isPreview){
   tpl = tpl.replaceAll('{{TITLE}}', escapeHtml(cfg.title || themeLabelsForBuild.title));
   tpl = tpl.replaceAll('{{SUBTITLE}}', escapeHtml(cfg.subtitle || themeLabelsForBuild.subtitle));
   tpl = tpl.replaceAll('{{ANVIL_LABEL}}', escapeHtml(cfg.anvilLabel || themeLabelsForBuild.anvil));
+  tpl = tpl.replaceAll('{{ANVIL_ICON_SIZE}}', (cfg.anvilIconSize || 56).toString());
   tpl = tpl.replaceAll('{{OBJECTIVE_LABEL}}', escapeHtml(cfg.objectiveLabel || themeLabelsForBuild.objective));
   tpl = tpl.replaceAll('{{ROWS}}', cfg.rows);
   tpl = tpl.replaceAll('{{COLS}}', cfg.cols);
